@@ -1,263 +1,229 @@
-NEXUS ADAPTIVE WEBGPU — README
-Companion to: Nexus_Web_LLM_Debugged.html
-Build: adaptive-20261008-1
-Prepared: 8 October 2026
+# NEXUS Adaptive WebGPU
 
-1. WHAT THIS APP DOES
+**Local GGUF inference in your browser, powered by a custom WebGPU engine.**
 
-NEXUS runs compatible local GGUF models inside a browser using a custom
-WebGPU inference engine. It combines the attached NEXUS interface with
-LittleBit packed-matrix and embedding kernels from your working v11 package.
+NEXUS Adaptive WebGPU combines the NEXUS browser interface with the LittleBit packed-matrix and embedding kernels from the NEXUS v11 project. It reads GGUF metadata, validates model graphs, selects supported chat formats, estimates memory requirements, and performs execution checks before generation.
 
-It reads model metadata, validates the tensor graph, selects supported chat
-formatting, estimates memory requirements, and runs model execution checks.
-It also includes 100 searchable configuration profiles and a measured speed
-tuning feature.
+| Project detail | Value |
+| --- | --- |
+| Application | `Nexus_Web_LLM_Debugged.html` |
+| Build | `adaptive-20261008-1` |
+| Documentation date | 8 October 2026 |
+| Runtime | Browser-based WebGPU (no inference server required) |
+| Model input | Compatible local `.gguf` files (weights not included) |
+| Current status | **Experimental — architecture and quantization support is limited** |
 
-This build is NOT a complete replacement for llama.cpp. A model appearing in
-the catalog does not mean that its architecture, every quantization, or its
-language quality has been validated. Unsupported configurations are rejected.
+> [!IMPORTANT]
+> **This is not a complete `llama.cpp` replacement.** The 100 searchable configuration profiles are presets, **not** 100 validated models. Model family, quantization support, successful loading, and language quality are separate questions. Unsupported configurations are rejected.
 
-2. WHAT YOU NEED
+## Contents
 
-- Nexus_Web_LLM_Debugged.html.
-- A compatible local .gguf model. Model weights are not included.
-- A browser that exposes WebGPU, with graphics acceleration available.
-  Browser testing for this build used Chromium with software graphics.
-- Enough available GPU memory for weights, the attention cache, and working
-  buffers. This build does not provide general CPU fallback or automatic
-  CPU/GPU offloading for oversized transformer models.
+- [Features](#features)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Automatic configuration and tuning](#automatic-configuration-and-tuning)
+- [Compatibility](#compatibility)
+- [Chat, memory, and storage](#chat-memory-and-storage)
+- [Troubleshooting](#troubleshooting)
+- [Validation and test results](#validation-and-test-results)
+- [Source and scope](#source-and-scope)
 
-PyTorch, a Python inference backend, an API key, and a model server are not
-required for the normal local-file workflow.
+## Features
 
-3. QUICK START
+| Capability | Description |
+| --- | --- |
+| **Local browser inference** | Loads compatible GGUF files through a file picker and runs the execution graph with WebGPU. |
+| **Model inspection** | Reads architecture, dimensions, tensor types, tokenizer data, context metadata, and attention-head configuration. |
+| **Compatibility gates** | Validates the tensor graph, tokenizer/chat format, and implemented weight types. |
+| **LittleBit support** | Supports the expected v11 packed-factor GGUF layout and embedding kernels. |
+| **Memory planning** | Estimates GPU budgets, working buffers, attention cache, and a safe context configuration. |
+| **Adaptive speed tuning** | Measures prompt processing and decode speed across candidate queue depths. |
+| **Configuration catalog** | Includes 100 searchable profiles; a catalog entry does not certify model compatibility. |
+| **Diagnostics** | Displays runtime details and model health checks; supports exporting diagnostics. |
 
-1) Download the HTML file and open it in your browser.
-2) Check the GPU indicator. Open Runtime details to inspect the adapter.
-3) Open Settings. In “VRAM GiB,” enter your GPU's actual total memory if known.
-   For example, entering 20 makes the planner use a 15 GiB budget, leaving
-   25% outside that budget. The planner reserves more space within its budget
-   for working buffers. This is an estimate, not an available-memory reading.
-4) Choose Load model and select your .gguf file.
-5) Wait for model loading and execution checks to finish. Open Model health
-   to inspect the checks if loading fails.
-6) Send a short test prompt first.
-7) Open Settings and press “Detect hardware / Auto tune” or
-   “Benchmark / tune speed” after loading. With a model loaded, either button
-   starts the measured tuning procedure.
+## Requirements
 
-Do not open several copies of a large model while testing. Each browser tab
-can allocate its own GPU buffers.
+- **Application:** `Nexus_Web_LLM_Debugged.html`.
+- **Model:** A compatible local `.gguf` file. No model weights are distributed with the application.
+- **Browser:** A browser exposing WebGPU with usable graphics acceleration. The build's recorded browser testing used Chromium with software graphics adapters.
+- **GPU memory:** Sufficient capacity for model weights, attention cache, and working buffers.
 
-If opening the file directly does not expose WebGPU, you can serve the folder
-locally. With Python already installed, open a terminal in the folder and run:
+**Not required for ordinary local inference:** PyTorch, a Python inference backend, an API key, or a model server.
 
-    python -m http.server 8000 --bind 127.0.0.1
+> [!WARNING]
+> This build does **not** provide a general CPU fallback or automatic CPU/GPU offloading when a transformer model exceeds GPU memory.
 
-Then open:
+## Quick start
 
-    http://127.0.0.1:8000/Nexus_Web_LLM_Debugged.html
+1. Download `Nexus_Web_LLM_Debugged.html` and open it in a WebGPU-capable browser.
+2. Check the **GPU** indicator; open **Runtime details** to inspect the adapter.
+3. Open **Settings**. If known, enter the GPU's actual total memory under **VRAM GiB**. For example, entering `20` uses a **15 GiB planning budget** (75% of the entered total), with an additional internal allowance for working buffers.
+4. Select **Load model** and choose a compatible local `.gguf` file.
+5. Allow model loading and execution checks to finish. If loading fails, inspect **Model health**.
+6. Send a short test prompt before using longer conversations.
+7. With a model loaded, select **Detect hardware / Auto tune** or **Benchmark / tune speed** in **Settings** to start measured tuning.
 
-On Windows, “py” may be used instead of “python.” This optional command only
-serves the HTML page; inference still runs in the browser. Stop it with Ctrl+C.
+> [!TIP]
+> Avoid opening several copies of a large model in separate browser tabs. Each tab can allocate its own GPU buffers.
 
-4. AUTOMATIC CONFIGURATION AND TUNING
+### Alternative: launch from localhost
 
-At model load, the app reads GGUF architecture, dimensions, attention-head
-counts, tokenizer information, tensor types, and context metadata. These
-values determine execution; catalog names do not override tensor shapes.
+If direct file opening does not expose WebGPU, serve the directory locally. In a terminal opened in the same folder as the HTML file, run:
 
-Memory planning:
+```bash
+python -m http.server 8000 --bind 127.0.0.1
+```
 
-- Uses browser-exposed GPU buffer limits and available hardware hints.
-- Cannot reliably read total VRAM, free VRAM, or exact installed system RAM.
-- Uses a conservative 1 GiB GPU budget when total VRAM is left blank.
-- Uses 75% of entered total VRAM when you supply a value.
-- Reserves space for working buffers and estimates the attention cache.
-- Selects context in 128-token increments, capped at 4096 tokens and further
-  limited by model metadata, memory estimates, and GPU binding limits.
+Open the following URL in your browser:
+
+```text
+http://127.0.0.1:8000/Nexus_Web_LLM_Debugged.html
+```
+
+On Windows, `py` may work in place of `python`. This optional command **only serves the HTML**; inference still executes in the browser. Press `Ctrl+C` in the terminal to stop the server.
+
+## Automatic configuration and tuning
+
+At load time, model metadata—not a catalog name—determines graph selection and execution limits.
+
+### Memory planning
+
+The planner:
+
+- Uses WebGPU-exposed buffer limits and browser hardware hints.
+- **Cannot reliably read** total or free VRAM, or exact installed system RAM.
+- Defaults to a conservative **1 GiB GPU budget** when total VRAM is unspecified.
+- Uses **75% of user-entered total VRAM** as its initial planning budget.
+- Accounts for working buffers and estimates the attention cache.
+- Selects context in **128-token increments**, capped at **4,096 tokens** and additionally constrained by metadata, memory estimates, and GPU binding limits.
 - Adjusts RAM staging and NHSC1 decode concurrency using browser hints.
 
-The GPU context and VRAM budget displays are calculated outputs, not manual
-controls in this build. Entering a different total VRAM value requires
-reloading the model to recalculate its allocations. Do not enter a larger
-value than your actual hardware has just to bypass a memory error.
+The GPU context and VRAM budget displays are **calculated outputs**, not editable controls. After changing the total VRAM setting, **reload the model** to recalculate allocations. Do not enter more VRAM than the system actually has to bypass an allocation error.
 
-Measured speed tuning:
+### Measured speed tuning
 
-- Compares prompt-processing queue depths of 4, 8, and 16.
-- Selects the fastest measured depth for the current session.
-- Measures a short prompt and eight decode steps.
-- Displays measured prefill and decode tokens per second.
+| Measurement | Behaviour |
+| --- | --- |
+| Queue depths | Compares `4`, `8`, and `16` |
+| Selection | Uses the fastest measured depth for the current session |
+| Test workload | Short prompt plus eight decode steps |
+| Output | Measured prefill and decode tokens per second |
 
-These are short, workload-dependent measurements. They do not establish
-sustained performance or the globally best settings. Repeat tuning after
-changing models. Tuning resets the execution cache but does not erase the
-visible conversation; the next request rebuilds context from chat history.
+These are brief, workload-dependent tests—not sustained throughput benchmarks or proof of globally optimal settings. Repeat tuning after changing models. Tuning clears the execution cache **without erasing visible chat history**; the next turn rebuilds context from that history.
 
-5. COMPATIBILITY
+## Compatibility
 
-Container formats:
+A matching architecture label or `.gguf` filename alone **does not guarantee compatibility**. Every required tensor, operator, tokenizer, and model-specific graph feature must be supported.
 
-- Ordinary GGUF versions 2 and 3.
-- The app's existing NHSC1 V3 compressed GGUF reader.
-- v11 LittleBit factor GGUF files with the expected metadata and factor layout.
+### Containers and compression
 
-Implemented dense weight types:
+| Format | Status |
+| --- | --- |
+| GGUF v2 / v3 | Supported for implemented model graphs and tensor types |
+| NHSC1 V3 compressed GGUF | Existing reader retained; **not revalidated end to end** in this repair |
+| NEXUS v11 LittleBit factor GGUF | Supported when expected metadata and factor layout are present |
 
-    F32, F16, BF16
-    Q4_0, Q4_1
-    Q5_0, Q5_1
-    Q8_0
-    Q4_K, Q5_K, Q6_K
+### Implemented dense weight formats
 
-A mixed-quantization model must use implemented types for every tensor needed
-by its execution graph. The .gguf filename alone is insufficient to establish
-compatibility.
+| Category | Formats |
+| --- | --- |
+| Floating point | `F32`, `F16`, `BF16` |
+| Standard quantization | `Q4_0`, `Q4_1`, `Q5_0`, `Q5_1`, `Q8_0` |
+| K-quantization | `Q4_K`, `Q5_K`, `Q6_K` |
 
-Architecture names admitted for further validation:
+Mixed-quantization GGUFs must use implemented formats for **all** required graph tensors.
 
-    llama, mistral, mistral3, ministral, qwen2, qwen3
+### Architectures admitted for additional validation
 
-SmolLM2 normally uses a Llama-style architecture with its own tokenizer and
-ChatML formatting. Qwen support includes projection biases and Qwen3 per-head
-query/key normalization.
+`llama` · `mistral` · `mistral3` · `ministral` · `qwen2` · `qwen3`
 
-Chat formatting includes supported ChatML, Llama 3 header, Mistral instruction,
-and plain-completion paths. The app does not execute arbitrary Jinja
-chat templates. Architecture admission is not a guarantee that every model
-in that family will pass all remaining checks.
+- **SmolLM2** generally uses a Llama-style graph but needs its own tokenizer and ChatML handling.
+- **Qwen** support covers projection biases; **Qwen3** also includes per-head query/key normalization.
+- Implemented formatting paths include supported **ChatML**, **Llama 3 header**, **Mistral instruction**, and **plain completion** modes.
+- Arbitrary **Jinja chat templates are not executed**.
 
-Not implemented in this build:
+Admission to this architecture list means the build can attempt further validation, **not** that every model in the family runs correctly.
 
-- Mixture-of-experts models, including GPT-oss and Mixtral.
-- Gemma and Phi architecture graphs.
-- Hybrid/state-space graphs.
-- IQ, TQ, MXFP4, Q2_K, Q3_K, and other unlisted execution quantizations.
-- Loading multiple GGUF shards as one model.
-- Vision, image, audio, or other multimodal inputs.
-- Sliding-window attention, partial rotary embeddings, per-frequency RoPE
-  tensors, logit softcapping, and unsupported RoPE scaling variants.
-- General CPU fallback and model weights spilling automatically into RAM.
+### Not implemented
 
-Some Mistral or Llama-family models require features in this unsupported list.
-A familiar family name therefore does not guarantee support.
+- Mixture-of-experts graphs, including **GPT-oss** and **Mixtral**.
+- **Gemma**, **Phi**, and hybrid/state-space architectures.
+- Quantizations such as `IQ`, `TQ`, `MXFP4`, `Q2_K`, `Q3_K`, and other formats not listed above.
+- Multi-shard GGUF loading as a single model.
+- Vision, image, audio, and other multimodal inputs.
+- Sliding-window attention, partial rotary embeddings, per-frequency RoPE tensors, logit softcapping, and unsupported RoPE scaling variants.
+- General CPU fallback or automatic overflow of model weights into system RAM.
 
-The 100 profiles are curated names with configuration defaults and status
-labels. They are not a popularity ranking, model downloads, or a list of 100
-successfully tested models. GPT-oss entries are marked unsupported; the app
-does not provide access to the ChatGPT service.
+Some Llama- and Mistral-family models require one or more unsupported features. The **100 configuration profiles** are curated configuration suggestions and status labels, not rankings, model downloads, or proof of 100 tested models. GPT-oss entries are marked unsupported; this app does not provide access to the ChatGPT service.
 
-6. CHAT, MEMORY, AND STORAGE
+## Chat, memory, and storage
 
-Each new request formats the conversation history and rebuilds its execution
-context. Prompt tokens, conversation history, template text, and requested
-output must fit the configured context together.
+### Context and generation
 
-“Response tokens” limits total generated tokens for the turn, including any
-reasoning the model generates. This is not a word count.
+Each turn reformats the visible conversation and rebuilds its execution context. The **prompt, chat history, chat template, and requested output** must all fit the selected context window. **Response tokens** limits generated tokens for the turn, including reasoning tokens; it is not a word count.
 
-Use Stop to interrupt generation. If you choose New chat while an operation
-is active, the app requests a stop; choose New chat again after it finishes.
-Stop the current operation before switching models.
+Use **Stop** to interrupt generation. If **New chat** is selected during an active operation, the app requests a stop; select **New chat** again when the operation has stopped. Stop inference before switching models.
 
-Selected settings and the existing local-memory feature use browser local
-storage. Memory can retain extracted facts and brief episodes; it does not
-train the model or change its weights. In this adaptive generation path,
-persistent memory is not automatically injected into the prompt. Visible
-conversation history is used, but a complete restorable chat archive is not
-promised. New chat does not clear persistent memory; use the Memory controls
-or the “clear my memory” command for that.
+### Local memory
 
-The normal file-picker inference path reads local model files and does not
-require a remote inference service. The retained Foundry integration can make
-network requests when explicitly launched with project_id and autoload=1 URL
-parameters. Browser storage behavior can differ between direct-file and
-localhost use. Keep your original model files separately.
+Selected settings and the existing memory feature use **browser local storage**. Saved memories can preserve extracted facts and brief episodes, but they **do not train the model or modify weights**. In this adaptive generation path, stored persistent memory is **not automatically inserted into prompts**. Visible conversation history is used; full restore of a chat archive is not guaranteed.
 
-7. TROUBLESHOOTING
+**New chat does not clear saved memory.** Use the memory controls or the `clear my memory` command when needed.
 
-“WebGPU unavailable”
-  Check browser graphics acceleration and Runtime details. Try reopening the
-  browser or the localhost launch method above. A browser displaying the HTML
-  successfully does not establish that WebGPU inference is available.
+### Local vs. network behaviour
 
-“Model weights need ... conservative GPU budget ...”
-  Enter your actual total VRAM in Settings and load the model again. If it
-  still does not fit, use a smaller model or a supported smaller quantization.
+Normal file-picker inference works with local model files **without a remote inference service**. The retained Foundry integration **may make network requests** when explicitly launched with `project_id` and `autoload=1` URL parameters. Browser storage differs between `file://` and `localhost` in some environments; keep original model files separately.
 
-“Architecture ... has no ... execution graph” / unsupported quantization
-  That graph or tensor format is not implemented. Renaming the file or choosing
-  a catalog profile will not repair it. Use a compatible model or conversion.
+## Troubleshooting
 
-“Unrecognized chat template” / unsupported pre-tokenizer
-  The model needs a tokenizer or template implementation absent from this
-  build. Do not force a different model's formatter just to make it load.
+| Symptom | Recommended check or action |
+| --- | --- |
+| **WebGPU unavailable** | Verify browser graphics acceleration and **Runtime details**. Restart the browser or try the localhost method. HTML rendering alone does not demonstrate WebGPU availability. |
+| **Conservative GPU budget / insufficient space** | Enter actual total VRAM in **Settings**, then reload the model. If it still cannot fit, choose a smaller model or a supported lower-bit format. |
+| **Unsupported architecture or quantization** | The required graph or tensor format is not implemented. Renaming a file or choosing a different preset will not add support. |
+| **Unrecognized chat template / pre-tokenizer** | The tokenizer or formatter is unsupported. Do not force an unrelated model's chat format. |
+| **Truncated tensor / invalid shape / duplicate tensor / GGUF parsing error** | Check for an incomplete or corrupted file, a model shard, or the wrong artifact. Re-copy or re-download the original if necessary. |
+| **Prompt plus output exceeds context** | Start a new chat, shorten input, or lower **Response tokens**. Automatic context remains capped at 4,096. |
+| **GPU device lost / allocation failure / instability** | Close other GPU-intensive tabs and apps, reload, and try a smaller model. A memory estimate does not guarantee successful allocation. |
+| **Nonsense or repetitive output** | Export diagnostics and inspect model and tokenizer compatibility. Passing load and finite-logit checks does not prove language quality. Base models may need different prompts than instruct models. |
+| **Legacy “est v15”, “faster”, or reasoning figures** | These inherited interface estimates are **not** measured llama.cpp comparisons. Use **Benchmark / tune speed** for session measurements. |
 
-“Truncated tensor,” invalid shape, duplicate tensor, or GGUF parsing error
-  Confirm the model file is complete and that you did not select a shard or
-  unrelated artifact. Re-copy or re-download the original model if necessary.
+### Reporting an issue
 
-“Prompt plus output exceeds context” / context-limit error
-  Start a new chat, shorten the prompt, or reduce Response tokens. This build
-  caps automatic context at 4096; it does not enable unlimited context merely
-  because a model advertises a larger training window.
+Use **Settings → Export diagnostics**. Include the exact **model filename**, **quantization**, **browser**, **GPU**, and **error message**. Review exported diagnostic JSON before publishing it, as it contains runtime/model details and measurements.
 
-GPU device lost, browser instability, or allocation failure
-  Close other GPU-heavy tabs/apps, reload the page, and try a smaller model.
-  A successful memory estimate is not a guarantee that allocation will succeed.
+## Validation and test results
 
-Model loads but produces nonsense or repeats itself
-  Export diagnostics. Loading, finite logits, and a tokenizer round trip do
-  not prove real-model language quality. A base model may also need a different
-  prompting approach from an instruction-tuned model. Do not treat preset
-  selection as evidence of reference parity.
+The supplied build documentation records these checks:
 
-Numbers labelled “est v15,” “faster,” or a legacy reasoning budget
-  The inherited chat footer can still display these older estimates. They are
-  not measured comparisons with llama.cpp or proof of a speed improvement.
-  Use the dedicated Benchmark / tune speed results for measured timings.
+- **11** JavaScript/parser/catalog/configuration tests.
+- SmolLM2 token-ID comparison with Hugging Face tokenizers on **seven cases**, including multilingual and whitespace-sensitive inputs.
+- Compilation of **12 WGSL inference pipelines**.
+- Independent NumPy comparisons for all **11 implemented dense weight formats**, LittleBit matrix/embedding math, Qwen projection biases, and Qwen3 normalization.
+- Synthetic Llama, Qwen2, Qwen3, and LittleBit browser model loading and token generation.
+- Synthetic GPU graph logits compared against independent NumPy references.
+- Failed-load buffer cleanup, reload after failure, and Chromium queue-depth tuning.
 
-To report a problem, use Settings → Export diagnostics and include the exact
-model filename, quantization, browser, GPU, and error message. The JSON contains
-runtime/model details and measurements; review it before sharing.
+### Synthetic GPU graph logit comparisons
 
-8. WHAT WAS TESTED
+Maximum reported **absolute logit error**:
 
-The repair was checked using:
+| Synthetic graph | Maximum absolute error (approx.) |
+| --- | ---: |
+| Llama | `0.000024803` |
+| Qwen2 | `0.000013024` |
+| Qwen3 | `0.000117302` |
+| LittleBit | `0.000000030` |
 
-- 11 JavaScript, parser, catalog, and configuration tests.
-- SmolLM2 token-ID comparison against Hugging Face tokenizers on seven cases,
-  including multilingual text and whitespace-sensitive input.
-- Compilation of 12 WGSL inference pipelines.
-- Independent NumPy comparisons for all 11 listed dense weight formats,
-  LittleBit matrix/embedding math, Qwen biases, and Qwen3 normalization.
-- Browser loading and token generation with synthetic Llama, Qwen2, Qwen3,
-  and LittleBit models.
-- Full synthetic GPU-graph logits against independent NumPy references.
-- Failed-load buffer cleanup, successful reload after failure, and measured
-  queue-depth tuning in Chromium.
+> [!CAUTION]
+> Graphics testing for **this adaptive repair** used the **SwiftShader** and **llvmpipe** software adapters. **No Radeon throughput benchmark or broad real-model quality benchmark was performed in this repair.** Synthetic tensor calculations demonstrate implementation math; they are not trained language-model quality tests. The NHSC1 reader was retained but not independently revalidated end to end.
 
-Maximum absolute logit errors in the synthetic graph comparisons:
+## Source and scope
 
-    Llama:       approximately 0.000024803
-    Qwen2:       approximately 0.000013024
-    Qwen3:       approximately 0.000117302
-    LittleBit:   approximately 0.000000030
+This adaptive build derives from the supplied NEXUS Web LLM HTML and `NEXUS_WebGPU_Complete_v11`, including `smol_integration.js`, SmolLM2 tokenizer integration, and packed-embedding work.
 
-Graphics execution used SwiftShader and llvmpipe software adapters. No Radeon
-throughput or broad real-model quality benchmark was performed in this repair.
-Synthetic weights test implementation math; they are not trained language
-models and their generated text is not a quality demonstration. The NHSC1
-reader was retained but was not independently revalidated end to end here.
+The documented deliverable is **one self-contained HTML application**: `Nexus_Web_LLM_Debugged.html`. This README describes **build `adaptive-20261008-1` only**; it does not promise all `llama.cpp` features, arbitrary LittleBit layouts, or compatibility with future models.
 
-9. SOURCE AND SCOPE
+---
 
-This build derives from the supplied Nexus Web LLM HTML and your
-NEXUS_WebGPU_Complete_v11 package, including smol_integration.js and the v11
-SmolLM2 tokenizer and packed-embedding changes.
-
-The deliverable is one self-contained HTML application. This README documents
-that specific build. It does not imply that future models, arbitrary LittleBit
-layouts, or all features supported by llama.cpp are implemented.
+**NEXUS Emerging Technology · Experimental browser-native AI inference**
