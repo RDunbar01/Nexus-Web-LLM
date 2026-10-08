@@ -1,0 +1,3774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NEXUS Stable Turbo v19 · Fast NHSC1/GPU Upload</title>
+<style>
+:root{
+  --bg:#fff;--side:#f7f7f8;--s1:#fff;--s2:#f4f4f5;--s3:#ececef;
+  --tx:#202123;--mu:#6f7075;--fa:#9a9ca2;--bd:#e5e5e7;
+  --ac:#111827;--aci:#fff;--ok:#087f5b;--er:#b42318;
+  --sh:0 16px 50px rgba(0,0,0,.11);--csh:0 2px 12px rgba(0,0,0,.08),0 12px 36px rgba(0,0,0,.07)
+}
+@media(prefers-color-scheme:dark){
+:root{--bg:#212121;--side:#171717;--s1:#212121;--s2:#2f2f2f;--s3:#393939;
+--tx:#ececec;--mu:#b4b4b4;--fa:#858585;--bd:#343434;--ac:#ececec;--aci:#171717;
+--ok:#68d6aa;--er:#ff9b92;--sh:0 18px 50px rgba(0,0,0,.36);--csh:0 10px 32px rgba(0,0,0,.27)}
+}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;overflow:hidden;background:var(--bg);color:var(--tx);
+font:14px/1.5 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+-webkit-font-smoothing:antialiased}button,input,textarea,select{font:inherit}button{color:inherit}
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);height:100vh}
+.side{background:var(--side);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:10px;min-width:0}
+.sideTop{display:flex;gap:7px}.newBtn,.railBtn,.ib,.menuBtn,.tool,.send,.card{border:0;cursor:pointer}
+.newBtn{height:40px;flex:1;background:transparent;border-radius:10px;display:flex;align-items:center;gap:10px;padding:0 10px;font-weight:650}
+.newBtn:hover,.railBtn:hover,.ib:hover{background:var(--s3)}
+.mark{width:27px;height:27px;border-radius:9px;background:var(--ac);color:var(--aci);display:grid;place-items:center;font-size:12px;font-weight:800}
+.ib{width:40px;height:40px;background:transparent;border-radius:10px;font-size:18px}
+.label{padding:15px 10px 6px;color:var(--fa);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.06em}
+.rail{flex:1;overflow:auto}.railBtn{width:100%;background:transparent;border-radius:9px;padding:9px 10px;display:flex;gap:9px;text-align:left;white-space:nowrap;overflow:hidden}
+.railBtn.active{background:var(--s3)}.railBtn span:last-child{overflow:hidden;text-overflow:ellipsis}
+.sideFoot{border-top:1px solid var(--bd);padding-top:8px}.mini{font-size:12px;color:var(--mu);padding:9px 10px}
+.mini b{color:var(--tx);font-weight:650}.dot{width:7px;height:7px;border-radius:50%;background:var(--fa);display:inline-block;margin-right:6px}.dot.ok{background:var(--ok)}
+.main{height:100vh;display:grid;grid-template-rows:56px minmax(0,1fr) auto;min-width:0;position:relative}
+.top{display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--bg);z-index:4}
+.modelBtn{border:0;background:transparent;border-radius:10px;padding:7px 9px;max-width:min(570px,58vw);display:flex;gap:8px;font-size:15px;font-weight:650;cursor:pointer}
+.modelBtn:hover{background:var(--s2)}.modelBtn span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chev{color:var(--mu)}
+.topR{display:flex;gap:6px;align-items:center}.badge{font-size:11px;color:var(--mu);border:1px solid var(--bd);border-radius:999px;padding:5px 9px;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge.ok{color:var(--ok)}.menuBtn{width:36px;height:36px;border-radius:10px;background:transparent;font-size:19px}.menuBtn:hover{background:var(--s2)}
+.chat{overflow:auto;scroll-behavior:smooth;padding:0 max(20px,calc((100% - 790px)/2))}
+.landing{height:100%;min-height:440px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 18px 80px}
+.bigMark{width:48px;height:48px;border-radius:16px;background:var(--ac);color:var(--aci);display:grid;place-items:center;font-weight:800;font-size:19px;box-shadow:var(--sh);margin-bottom:22px}
+.landing h1{font-size:30px;line-height:1.15;letter-spacing:-.025em;margin:0 0 9px;font-weight:650}.landing p{margin:0;color:var(--mu)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(610px,100%);gap:9px;margin-top:26px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px;text-align:left}.card:hover{background:var(--s2);transform:translateY(-1px)}
+.card b{display:block;font-size:13px;margin-bottom:2px}.card small{color:var(--mu)}
+.turn{max-width:790px;margin:0 auto;padding:22px 0}.user{display:flex;justify-content:flex-end}.bubble{max-width:min(78%,650px);background:var(--s2);border-radius:20px;padding:10px 16px;white-space:pre-wrap}
+.asst{display:grid;grid-template-columns:30px minmax(0,1fr);gap:13px}.av{width:28px;height:28px;border-radius:9px;background:var(--ac);color:var(--aci);display:grid;place-items:center;font-size:11px;font-weight:800}
+.answer{font-size:15px;line-height:1.67;white-space:pre-wrap;overflow-wrap:anywhere}.meta{font-size:11px;color:var(--fa);margin-top:9px}
+.composerZone{padding:10px max(20px,calc((100% - 790px)/2)) 18px;background:linear-gradient(180deg,transparent,var(--bg) 24%,var(--bg));z-index:5}
+.composer{max-width:790px;margin:auto;background:var(--s2);border:1px solid var(--bd);border-radius:26px;box-shadow:var(--csh);padding:10px 12px 8px}
+textarea{width:100%;min-height:46px;max-height:190px;resize:none;border:0;outline:0;background:transparent;color:var(--tx);font-size:15px;line-height:1.5;padding:8px 10px 4px}
+textarea::placeholder{color:var(--fa)}.cRow{display:flex;align-items:center;justify-content:space-between}.tools{display:flex;gap:4px}
+.tool{height:34px;min-width:34px;border-radius:17px;background:transparent;color:var(--mu);padding:0 9px}.tool:hover{background:var(--s3);color:var(--tx)}
+.send{width:34px;height:34px;border-radius:50%;background:var(--ac);color:var(--aci);font-size:18px}.send:disabled{opacity:.3}
+.note{text-align:center;color:var(--fa);font-size:10px;margin-top:8px}
+.modalBg{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);z-index:50;display:none;place-items:center;padding:18px}.modalBg.show{display:grid}
+.modal{width:min(680px,96vw);max-height:88vh;overflow:auto;background:var(--s1);border:1px solid var(--bd);border-radius:18px;box-shadow:var(--sh);padding:18px}
+.mHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.mHead h2{font-size:18px;margin:0}.x{border:0;background:transparent;width:34px;height:34px;border-radius:9px;cursor:pointer;color:var(--mu)}.x:hover{background:var(--s2)}
+.info{background:var(--s2);border-radius:13px;padding:14px;color:var(--mu);font-size:12px;line-height:1.55;white-space:pre-wrap}.info b{color:var(--tx)}
+.row{display:grid;grid-template-columns:1fr 160px;gap:16px;align-items:center;border-top:1px solid var(--bd);padding:13px 2px}.row:first-of-type{border-top:0}.row strong{display:block}.row small{color:var(--mu)}
+.row input,.row select{width:100%;border:1px solid var(--bd);border-radius:10px;background:var(--s2);color:var(--tx);padding:8px}
+.progress{height:5px;background:var(--s3);border-radius:999px;overflow:hidden;margin-top:10px}.progress>div{height:100%;width:0;background:var(--ok);transition:width .15s}
+.hidden{display:none!important}
+
+.msgActions{display:flex;gap:4px;margin-top:8px;opacity:0;transition:opacity .15s}
+.turn:hover .msgActions{opacity:1}
+.msgActions button{border:0;background:transparent;color:var(--mu);font-size:12px;padding:5px 7px;border-radius:7px;cursor:pointer}
+.msgActions button:hover{background:var(--s2);color:var(--tx)}
+.answer h1,.answer h2,.answer h3{margin:.55em 0 .35em;line-height:1.25}
+.answer h3{font-size:1.05em}
+.answer pre{background:var(--side);border:1px solid var(--bd);padding:12px;border-radius:10px;overflow:auto;white-space:pre}
+.answer code{font-family:"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:.92em;background:var(--s2);padding:1px 4px;border-radius:5px}
+.answer pre code{background:transparent;padding:0}
+.answer ul{margin:.45em 0;padding-left:1.4em}
+.answer p{margin:.25em 0 .75em}
+.thinkingState{color:var(--mu);font-size:12px;display:flex;align-items:center;gap:7px;margin:3px 0 9px}
+.thinkingDot{width:6px;height:6px;border-radius:50%;background:var(--mu);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.proTag{font-size:10px;font-weight:750;letter-spacing:.04em;border:1px solid var(--bd);border-radius:999px;padding:2px 6px;color:var(--mu)}
+
+@media(max-width:820px){.app{grid-template-columns:1fr}.side{display:none}.chat,.composerZone{padding-left:14px;padding-right:14px}.cards{grid-template-columns:1fr}.badge{max-width:160px}}
+</style>
+</head>
+<body>
+<input id="fileInput" class="hidden" type="file" accept=".gguf"/>
+<div class="app">
+<aside class="side">
+  <div class="sideTop"><button class="newBtn" onclick="newChat()"><span class="mark">N</span><span>New chat</span></button><button class="ib" onclick="pickModel()" title="Load model">⌘</button></div>
+  <div class="label">Chats</div>
+  <div class="rail" id="rail"><button class="railBtn active"><span>◌</span><span>New conversation</span></button></div>
+  <div class="sideFoot">
+    <div class="mini"><div><span id="gpuDot" class="dot"></span><b id="gpuMini">Checking WebGPU</b></div><div id="modelMini">No model loaded</div></div>
+    <button class="railBtn" onclick="pickModel()"><span>▣</span><span>Load compressed model</span></button>
+    <button class="railBtn" onclick="showRuntime()"><span>◉</span><span>Runtime details</span></button>
+    <button class="railBtn" onclick="showHealth()"><span>✓</span><span>Model health</span></button>
+    <button class="railBtn" onclick="showMemory()"><span>◈</span><span>Memory</span></button>
+    <button class="railBtn" onclick="showSettings()"><span>⚙</span><span>Settings</span></button>
+  </div>
+</aside>
+<main class="main">
+  <header class="top"><button class="modelBtn" onclick="pickModel()"><span id="modelTitle">NEXUS Native</span><span class="proTag">REFERENCE PRO</span><span class="chev">⌄</span></button>
+  <div class="topR"><div class="badge" id="badge">Browser runtime</div><button class="menuBtn" onclick="showRuntime()">⋯</button></div></header>
+  <section class="chat" id="chat">
+    <div class="landing" id="landing"><div class="bigMark">N</div><h1>What can I help with?</h1>
+    <p id="sub">Load an NHSC1 n_*.gguf, a Mistral 14B Q4 GGUF, or a NEXUS GGUF to begin.</p>
+    <div class="cards"><button class="card" onclick="pickModel()"><b>Load a GGUF model</b><small>Open NHSC1, Mistral Q4, or NEXUS GGUF</small></button>
+    <button class="card" onclick="showRuntime()"><b>Check WebGPU</b><small>Inspect the GPU adapter and NHSC1 runtime</small></button></div></div>
+  </section>
+  <section class="composerZone"><div class="composer"><textarea id="prompt" rows="1" placeholder="Message NEXUS Native" oninput="resizeBox()" onkeydown="keySend(event)"></textarea>
+  <div class="cRow"><div class="tools"><button class="tool" onclick="pickModel()" title="Load model">＋</button><button class="tool" onclick="showSettings()" title="Settings">⚙</button></div>
+  <button class="send" id="send" onclick="sendOrStop()">↑</button></div></div>
+  <div class="note">NEXUS Local Pro · single-file browser runtime · NEXUS Stable Turbo v19 · parallel NHSC1 decode · chunked GPU upload · reference mode retained</div></section>
+</main>
+</div>
+
+<div class="modalBg" id="runtimeBg" onclick="if(event.target===this)hideRuntime()"><div class="modal">
+<div class="mHead"><h2>Runtime details</h2><button class="x" onclick="hideRuntime()">✕</button></div>
+<div class="info" id="runtimeInfo">Initializing…</div>
+<div class="progress"><div id="verifyBar"></div></div>
+<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+<button class="card" style="padding:9px 12px" onclick="verifyAllBlocks()">Verify NHSC1 blocks</button>
+</div></div></div>
+
+
+<div class="modalBg" id="healthBg" onclick="if(event.target===this)hideHealth()"><div class="modal">
+<div class="mHead"><h2>Model health</h2><button class="x" onclick="hideHealth()">✕</button></div>
+<div class="info" id="healthInfo">Load a model to run the reference-accuracy checks.</div>
+<div class="progress"><div id="healthBar"></div></div>
+</div></div>
+
+<div class="modalBg" id="memoryBg" onclick="if(event.target===this)hideMemory()"><div class="modal">
+<div class="mHead"><h2>Persistent memory</h2><button class="x" onclick="hideMemory()">✕</button></div>
+<div class="info" id="memoryInfo">No memories yet.</div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+<button class="card" style="padding:9px 12px" onclick="exportMemory()">Export memory</button>
+<button class="card" style="padding:9px 12px" onclick="clearMemory()">Clear memory</button>
+</div></div></div>
+
+<div class="modalBg" id="settingsBg" onclick="if(event.target===this)hideSettings()"><div class="modal">
+<div class="mHead"><h2>Browser settings</h2><button class="x" onclick="hideSettings()">✕</button></div>
+<div class="row"><label><strong>Decoded block cache</strong><small>Memory used for recently reconstructed NHSC1 blocks.</small></label><select id="cacheSize"><option>128</option><option>256</option><option selected>512</option><option>1024</option></select></div>
+<div class="row"><label><strong>Power preference</strong><small>Requested when selecting the WebGPU adapter.</small></label><select id="powerPref"><option value="high-performance" selected>High performance</option><option value="low-power">Low power</option></select></div>
+<div class="row"><label><strong>GPU KV context</strong><small>GPU-resident Mistral KV cache. 8K uses about 2.5 GiB for this 40-layer/8-KV-head model in FP32.</small></label><select id="gpuContext"><option value="4096" selected>4K</option><option value="8192">8K</option><option value="16384">16K</option></select></div>
+<div class="row"><label><strong>VRAM residency budget</strong><small>Optimized default for a 20 GB AMD GPU. Leaves headroom for KV cache and browser/GPU working memory.</small></label><select id="vramBudget"><option value="12">12 GB</option><option value="14">14 GB</option><option value="16" selected>16 GB</option><option value="18">18 GB</option></select></div>
+<div class="row"><label><strong>System RAM staging</strong><small>NHSC1 blocks are reconstructed in RAM only long enough to upload their quantized bytes to the GPU.</small></label><select id="ramCache"><option value="512">512 MB</option><option value="1024" selected>1 GB</option><option value="1536">1.5 GB</option><option value="2048">2 GB</option></select></div>
+<div class="row"><label><strong>NHSC1 parallel decode</strong><small>Concurrent block reconstruction used while loading an n_*.gguf. Higher values improve preload on multi-core systems but use more temporary RAM.</small></label><select id="nhscParallel"><option value="4">4</option><option value="8">8</option><option value="12" selected>12</option><option value="16">16</option><option value="24">24</option></select></div>
+<div class="row"><label><strong>Quality preset</strong><small>Reference Accurate disables experimental penalties and follows the model’s intended chat path.</small></label><select id="qualityPreset" onchange="applyQualityPreset(this.value)"><option value="reference" selected>Reference Accurate</option><option value="balanced">Balanced</option><option value="creative">Creative</option><option value="greedy">Greedy / Diagnostic</option></select></div>
+<div class="row"><label><strong>Response tokens</strong><small>Visible answer length. Reasoning tokens have a separate budget.</small></label><select id="maxNewTokens"><option value="96">96</option><option value="192">192</option><option value="256" selected>256</option><option value="512">512</option></select></div>
+<div class="row"><label><strong>Reasoning speed</strong><small>Stable Turbo classifies the prompt and uses 4 / 8 / 24 / 48 hidden tokens. 2× Adaptive preserves the v16 8 / 16 / 32 / 64 policy. Reference 192 preserves the original quality path.</small></label><select id="reasonPolicy"><option value="ultra" selected>Stable Turbo — fast + coherent</option><option value="adaptive">2× Adaptive — v16</option><option value="fixed">Fixed budget</option><option value="reference">Reference 192</option></select></div>
+<div class="row"><label><strong>Maximum hidden reasoning</strong><small>Adaptive mode uses 8 / 16 / 32 / 64 hidden tokens and never exceeds this cap. Fixed mode uses the selected value directly.</small></label><select id="reasonBudget"><option value="32">Turbo 32</option><option value="64" selected>Turbo Quality 64</option><option value="96">Balanced 96</option><option value="128">Deep 128</option><option value="192">Reference 192</option><option value="256">Maximum 256</option></select></div>
+<div class="row"><label><strong>Temperature</strong><small>Llama-style sampling temperature. 0 uses greedy decoding.</small></label><input id="sampleTemp" type="number" min="0" max="2" step="0.05" value="0.70"/></div>
+<div class="row"><label><strong>Top-k</strong><small>Keep the highest scoring candidates before probability filtering.</small></label><input id="sampleTopK" type="number" min="1" max="200" step="1" value="40"/></div>
+<div class="row"><label><strong>Top-p</strong><small>Nucleus probability threshold.</small></label><input id="sampleTopP" type="number" min="0.05" max="1" step="0.01" value="0.95"/></div>
+<div class="row"><label><strong>Min-p</strong><small>Remove candidates far below the best token probability.</small></label><input id="sampleMinP" type="number" min="0" max="1" step="0.01" value="0.05"/></div>
+<div class="row"><label><strong>Repeat penalty</strong><small>Discourages recently used tokens. 1.0 disables.</small></label><input id="repeatPenalty" type="number" min="1" max="1.5" step="0.01" value="1.00"/></div>
+<div class="row"><label><strong>DRY anti-repeat</strong><small>Penalizes tokens that extend repeated sequences.</small></label><input id="dryMultiplier" type="number" min="0" max="3" step="0.1" value="0.0"/></div>
+<div class="row"><label><strong>Sampling seed</strong><small>-1 chooses a fresh random seed for each chat.</small></label><input id="sampleSeed" type="number" step="1" value="-1"/></div>
+<div class="row"><label><strong>Visible decoding</strong><small>Quality uses the full llama-style sampler for coherent visible prose and reliable stopping. Auto/Max Speed retain the experimental GPU-greedy visible path for benchmarking.</small></label><select id="visiblePolicy"><option value="quality" selected>Quality sampler — recommended</option><option value="auto">Auto experimental — GPU casual/simple</option><option value="greedy">Max Speed experimental — GPU greedy</option></select></div>
+<div class="row"><label><strong>Generation engine</strong><small>Persistent quantized VRAM weights, full GPU transformer graph, prompt-dependent reasoning, and adaptive GPU/quality visible decoding.</small></label><select disabled><option>Stable Turbo v19</option></select></div>
+</div></div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const te=new TextEncoder(),td=new TextDecoder();
+const TYPE_NAMES={0:'F32',1:'F16',2:'Q4_0',3:'Q4_1',6:'Q5_0',7:'Q5_1',8:'Q8_0',9:'Q8_1',10:'Q2_K',11:'Q3_K',12:'Q4_K',13:'Q5_K',14:'Q6_K',15:'Q8_K',16:'IQ2_XXS',17:'IQ2_XS',18:'IQ3_XXS',19:'IQ1_S',20:'IQ4_NL',21:'IQ3_S',22:'IQ2_S',23:'IQ4_XS',24:'I8',25:'I16',26:'I32',27:'I64',28:'F64',29:'IQ1_M',30:'BF16',31:'TQ1_0',32:'TQ2_0',33:'MXFP4'};
+const OPS={0:'RAW',1:'ZERO',2:'SPARSE',3:'WORD4',4:'DELTA32',5:'DELTA64',6:'LANES2',7:'LANES4',8:'LANES8',9:'BITPLANE32',10:'TOKEN',11:'REF',12:'RREF',13:'PATCH',14:'RPATCH'};
+const TOKENS=[...[
+'.weight','v.blk.','.attn_','.ffn_','attn_out','attn_q','attn_k','attn_v','ffn_down','ffn_gate','ffn_up','.ln1','.ln2','general.','clip.vision.','tokenizer.','embedding','projection','layer_norm'
+]].sort((a,b)=>b.length-a.length).map(x=>te.encode(x));
+
+let gpu={available:false,label:'WebGPU unavailable',adapter:null,device:null,info:null};
+let reader=null,model=null,loaded=false,busy=false,history=[],chatTitle='New conversation';
+let NEXUS_ABORT=false;
+let NEXUS_SKIP_NEWCHAT_RESET=false;
+let MODEL_HEALTH={ready:false,stage:'No model loaded',checks:[],warnings:[],topTokens:[],error:null};
+
+const STABLE_SETTINGS_KEY='nexus_stable_v19_settings';
+const STABLE_SETTING_IDS=['cacheSize','powerPref','gpuContext','vramBudget','ramCache','nhscParallel','qualityPreset','maxNewTokens','reasonPolicy','reasonBudget','sampleTemp','sampleTopK','sampleTopP','sampleMinP','repeatPenalty','dryMultiplier','sampleSeed','visiblePolicy'];
+function loadStableSettings(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(STABLE_SETTINGS_KEY)||'{}');
+  for(const id of STABLE_SETTING_IDS){const e=$(id);if(e&&saved[id]!=null)e.value=String(saved[id])}
+ }catch(_){}
+}
+function saveStableSettings(){
+ const out={};for(const id of STABLE_SETTING_IDS){const e=$(id);if(e)out[id]=String(e.value)}
+ try{localStorage.setItem(STABLE_SETTINGS_KEY,JSON.stringify(out))}catch(_){}
+}
+function bindStableSettings(){
+ for(const id of STABLE_SETTING_IDS){const e=$(id);if(e){e.addEventListener('change',saveStableSettings);e.addEventListener('input',saveStableSettings)}}
+ window.addEventListener('storage',ev=>{if(ev.key===STABLE_SETTINGS_KEY)loadStableSettings()})
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function applyQualityPreset(name){
+ const set=(id,v)=>{const e=$(id);if(e)e.value=String(v)};
+ if(name==='reference'){
+  set('sampleTemp',0.70);set('sampleTopK',40);set('sampleTopP',0.95);
+  set('sampleMinP',0.05);set('repeatPenalty',1.00);set('dryMultiplier',0.0)
+ }else if(name==='balanced'){
+  set('sampleTemp',0.80);set('sampleTopK',40);set('sampleTopP',0.95);
+  set('sampleMinP',0.05);set('repeatPenalty',1.04);set('dryMultiplier',0.0)
+ }else if(name==='creative'){
+  set('sampleTemp',1.00);set('sampleTopK',60);set('sampleTopP',0.97);
+  set('sampleMinP',0.02);set('repeatPenalty',1.04);set('dryMultiplier',0.0)
+ }else if(name==='greedy'){
+  set('sampleTemp',0);set('sampleTopK',1);set('sampleTopP',1);
+  set('sampleMinP',0);set('repeatPenalty',1);set('dryMultiplier',0)
+ }
+}
+function sendOrStop(){
+ if(busy){NEXUS_ABORT=true;setBadge('Stopping after the current GPU token…',gpu.available);return}
+ sendMessage()
+}
+function setSendMode(active){
+ const b=$('send');if(!b)return;
+ b.textContent=active?'■':'↑';b.title=active?'Stop generation':'Send'
+}
+function healthSet(stage,progress=null){
+ MODEL_HEALTH.stage=stage;
+ const bar=$('healthBar');if(bar&&progress!=null)bar.style.width=Math.max(0,Math.min(100,progress))+'%';
+ try{renderHealth()}catch(_){}
+}
+function healthAdd(name,ok,detail=''){
+ MODEL_HEALTH.checks.push({name,ok,detail});
+ if(!ok)MODEL_HEALTH.error=detail||name;renderHealth()
+}
+function renderHealth(){
+ const el=$('healthInfo');if(!el)return;
+ const h=MODEL_HEALTH;
+ let text='<b>Status</b>\n'+esc(h.ready?'PASS — Mistral3 reference path enabled':h.stage||'Not ready')+'\n\n';
+ text+='<b>Performance path</b>\n'+esc(gpu.subgroups?'RDNA subgroup-capable WebGPU detected. The faster matmul is activated only after scalar-reference agreement.':'Portable baseline WebGPU matmul.')+'\n\n';
+ text+='<b>Strict reference mode</b>\nGGML RoPE ordering and Tekken merge flags are taken from llama.cpp/GGUF semantics. Persistent memory injection is disabled until base-model conversation quality is validated.\n\n';
+ if(h.checks.length)text+='<b>Checks</b>\n'+h.checks.map(x=>(x.ok?'✓ ':'✕ ')+esc(x.name)+(x.detail?' — '+esc(x.detail):'')).join('\n')+'\n\n';
+ if(h.topTokens&&h.topTokens.length)text+='<b>Diagnostic top tokens</b>\n'+h.topTokens.map(x=>esc(x)).join('\n')+'\n\n';
+ if(h.warnings&&h.warnings.length)text+='<b>Warnings</b>\n'+h.warnings.map(x=>'• '+esc(x)).join('\n');
+ el.innerHTML=text
+}
+function showHealth(){renderHealth();$('healthBg').classList.add('show')}
+function hideHealth(){$('healthBg').classList.remove('show')}
+
+
+function renderMarkdownLite(text){
+ const parts=String(text||'').split(/(```[\s\S]*?```)/g);
+ return parts.map(part=>{
+  if(part.startsWith('```')&&part.endsWith('```')){
+   const body=part.slice(3,-3).replace(/^[a-zA-Z0-9_+-]+\n/,'');
+   return '<pre><code>'+esc(body)+'</code></pre>'
+  }
+  let x=esc(part);
+  x=x.replace(/^###\s+(.+)$/gm,'<h3>$1</h3>');
+  x=x.replace(/^##\s+(.+)$/gm,'<h2>$1</h2>');
+  x=x.replace(/^#\s+(.+)$/gm,'<h1>$1</h1>');
+  x=x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  x=x.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  x=x.replace(/(?:^|\n)-\s+(.+)(?=\n|$)/g,'<li>$1</li>');
+  x=x.replace(/((?:<li>.*?<\/li>\s*)+)/gs,'<ul>$1</ul>');
+  x=x.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
+  return '<p>'+x+'</p>'
+ }).join('')
+}
+function addMessageActions(turn,text){
+ const host=turn.querySelector('.meta')?.parentElement||turn;
+ const bar=document.createElement('div');bar.className='msgActions';
+ const copy=document.createElement('button');copy.textContent='Copy';
+ copy.onclick=async()=>{try{await navigator.clipboard.writeText(text);copy.textContent='Copied';setTimeout(()=>copy.textContent='Copy',1000)}catch(_){}};
+ bar.appendChild(copy);host.appendChild(bar)
+}
+
+function resizeBox(){const x=$('prompt');x.style.height='auto';x.style.height=Math.min(x.scrollHeight,190)+'px'}
+function scrollBottom(){$('chat').scrollTop=$('chat').scrollHeight}
+function clearLanding(){const x=$('landing');if(x)x.remove()}
+function updateRail(){$('rail').innerHTML='<button class="railBtn active"><span>◌</span><span>'+esc(chatTitle)+'</span></button>'}
+function addUser(t){clearLanding();const d=document.createElement('div');d.className='turn user';d.innerHTML='<div class="bubble">'+esc(t)+'</div>';$('chat').appendChild(d);scrollBottom()}
+function addAssistant(t='',meta=''){clearLanding();const d=document.createElement('div');d.className='turn asst';d.innerHTML='<div class="av">N</div><div><div class="answer">'+esc(t)+'</div><div class="meta">'+esc(meta)+'</div></div>';$('chat').appendChild(d);scrollBottom();return d}
+function setBadge(t,ok=false){$('badge').textContent=t;$('badge').className='badge '+(ok?'ok':'')}
+function newChat(){history=[];chatTitle='New conversation';updateRail();$('chat').innerHTML='<div class="landing" id="landing"><div class="bigMark">N</div><h1>What can I help with?</h1><p id="sub">'+(loaded?'Your compressed model is loaded.':'Load an NHSC1 n_*.gguf, a Mistral 14B Q4 GGUF, or a NEXUS GGUF to begin.')+'</p><div class="cards"><button class="card" onclick="pickModel()"><b>'+(loaded?'Change model':'Load a GGUF model')+'</b><small>Open NHSC1, Mistral Q4, or NEXUS GGUF</small></button><button class="card" onclick="showRuntime()"><b>Check WebGPU</b><small>Inspect the GPU adapter and NHSC1 runtime</small></button></div></div>'; $('prompt').focus()}
+function keySend(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function showRuntime(){refreshRuntimeInfo();$('runtimeBg').classList.add('show')}
+function hideRuntime(){$('runtimeBg').classList.remove('show')}
+function showSettings(){$('settingsBg').classList.add('show')}
+function hideSettings(){$('settingsBg').classList.remove('show')}
+function pickModel(){$('fileInput').click()}
+
+function u64(v,o){return Number(v.getBigUint64(o,true))}
+function i64(v,o){return Number(v.getBigInt64(o,true))}
+function readVar(data,pos=0){let n=0n,s=0n;for(;;){if(pos>=data.length)throw Error('Truncated varint');const b=BigInt(data[pos++]);n|=(b&127n)<<s;if(!(b&128n))return [Number(n),pos];s+=7n;if(s>63n)throw Error('Invalid varint')}}
+function unzigBig(n){n=BigInt(n);return (n>>1n)^(-(n&1n))}
+async function gunzip(data){
+ if(!('DecompressionStream'in window))throw Error('This browser does not provide DecompressionStream(gzip). Use a current Chrome/Edge browser.');
+ const ds=new DecompressionStream('gzip');
+ const writer=ds.writable.getWriter();
+ const writing=writer.write(data).then(()=>writer.close());
+ const reading=new Response(ds.readable).arrayBuffer();
+ await writing;
+ return new Uint8Array(await reading)
+}
+async function gunzip2(data){return await gunzip(await gunzip(data))}
+const crcTable=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(a){
+ let c=0xffffffff,i=0,n=a.length;
+ for(;i+8<=n;i+=8){
+  c=crcTable[(c^a[i])&255]^(c>>>8);c=crcTable[(c^a[i+1])&255]^(c>>>8);
+  c=crcTable[(c^a[i+2])&255]^(c>>>8);c=crcTable[(c^a[i+3])&255]^(c>>>8);
+  c=crcTable[(c^a[i+4])&255]^(c>>>8);c=crcTable[(c^a[i+5])&255]^(c>>>8);
+  c=crcTable[(c^a[i+6])&255]^(c>>>8);c=crcTable[(c^a[i+7])&255]^(c>>>8)
+ }
+ for(;i<n;i++)c=crcTable[(c^a[i])&255]^(c>>>8);
+ return (c^0xffffffff)>>>0
+}
+
+function sparseDecode(p,n){const out=new Uint8Array(n);let pos=0,count;[count,pos]=readVar(p,pos);let idx=-1;for(let k=0;k<count;k++){let d;[d,pos]=readVar(p,pos);idx+=d+1;if(idx>=n||pos>=p.length)throw Error('Invalid SPARSE block');out[idx]=p[pos++]}if(pos!==p.length)throw Error('SPARSE trailing data');return out}
+function word4Decode(p,n){let pos=0;if(!p.length)throw Error('Invalid WORD4');const dc=p[pos++],dict=[];for(let i=0;i<dc;i++){dict.push(p.slice(pos,pos+4));pos+=4}let wc,pc;[wc,pos]=readVar(p,pos);[pc,pos]=readVar(p,pos);const packed=p.slice(pos,pos+pc);pos+=pc;const out=new Uint8Array(n);let op=0;for(let i=0;i<wc;i++){const c=(packed[i>>1]>>(4*(i&1)))&15;if(c===15){out.set(p.slice(pos,pos+4),op);pos+=4}else{if(c>=dict.length)throw Error('WORD4 dictionary index');out.set(dict[c],op)}op+=4}if(op!==n||pos!==p.length)throw Error('WORD4 mismatch');return out}
+function deltaDecode(p,n,w){if(p.length<w||n%w)throw Error('Invalid DELTA');const out=new Uint8Array(n),dv=new DataView(p.buffer,p.byteOffset,p.byteLength),odv=new DataView(out.buffer);let pos=w;if(w===4){let prev=BigInt(dv.getUint32(0,true));odv.setUint32(0,Number(prev),true);for(let i=1;i<n/4;i++){let z;[z,pos]=readVar(p,pos);prev=(prev+unzigBig(z))&0xffffffffn;odv.setUint32(i*4,Number(prev),true)}}else{let prev=dv.getBigUint64(0,true);odv.setBigUint64(0,prev,true);for(let i=1;i<n/8;i++){let z;[z,pos]=readVar(p,pos);prev=(prev+unzigBig(z))&0xffffffffffffffffn;odv.setBigUint64(i*8,prev,true)}}if(pos!==p.length)throw Error('DELTA trailing data');return out}
+function laneDecode(p,n,w){let pos=0,count;[count,pos]=readVar(p,pos);if(count*w!==n)throw Error('LANE size mismatch');const lanes=[];for(let l=0;l<w;l++){const mode=p[pos++];if(mode===0){lanes.push(new Uint8Array(count).fill(p[pos++]))}else if(mode===1){const dc=p[pos++],dict=p.slice(pos,pos+dc);pos+=dc;let plen;[plen,pos]=readVar(p,pos);const packed=p.slice(pos,pos+plen);pos+=plen;const vals=new Uint8Array(count);for(let i=0;i<count;i++){const c=(packed[i>>1]>>(4*(i&1)))&15;if(c>=dc)throw Error('LANE dictionary index');vals[i]=dict[c]}lanes.push(vals)}else if(mode===2){lanes.push(p.slice(pos,pos+count));pos+=count}else throw Error('Unknown LANE mode')}if(pos!==p.length)throw Error('LANE trailing data');const out=new Uint8Array(n);for(let i=0;i<count;i++)for(let l=0;l<w;l++)out[i*w+l]=lanes[l][i];return out}
+function bitplaneDecode(p,n){let pos=0,count;[count,pos]=readVar(p,pos);if(count*4!==n)throw Error('BITPLANE size mismatch');const sb=p.slice(pos,pos+8);pos+=8;const pb=Math.ceil(count/8),words=new Uint32Array(count);for(let bit=0;bit<32;bit++){const state=(sb[bit>>2]>>((bit&3)*2))&3;if(state===1){const m=(1<<bit)>>>0;for(let i=0;i<count;i++)words[i]=(words[i]|m)>>>0}else if(state===2){const plane=p.slice(pos,pos+pb);pos+=pb;const m=(1<<bit)>>>0;for(let i=0;i<count;i++)if((plane[i>>3]>>(i&7))&1)words[i]=(words[i]|m)>>>0}else if(state===3)throw Error('Invalid bitplane state')}if(pos!==p.length)throw Error('BITPLANE trailing data');return new Uint8Array(words.buffer)}
+function tokenDecode(p){const out=[];let i=0;while(i<p.length){const x=p[i++];if(x!==255){out.push(x);continue}if(i>=p.length)throw Error('Bad token stream');const c=p[i++];if(c===0)out.push(255);else if(c>=1&&c<=TOKENS.length)out.push(...TOKENS[c-1]);else throw Error('Bad token id')}return Uint8Array.from(out)}
+function patchDecode(base,p){const out=base.slice();let pos=0,count;[count,pos]=readVar(p,pos);let idx=-1;for(let k=0;k<count;k++){let d;[d,pos]=readVar(p,pos);idx+=d+1;if(idx>=out.length||pos>=p.length)throw Error('Bad PATCH');out[idx]^=p[pos++]}if(pos!==p.length)throw Error('PATCH trailing data');return out}
+
+
+class FoundryRemoteFile{
+ constructor(url,name,size,lastModified=0){this.url=url;this.name=name||'foundry-model.gguf';this.size=Number(size)||0;this.lastModified=Number(lastModified)||0}
+ slice(start=0,end=this.size){
+  const self=this,lo=Math.max(0,Number(start)||0),hi=Math.max(lo,Math.min(this.size,Number(end)||this.size));
+  return {arrayBuffer:async()=>{
+   if(hi<=lo)return new ArrayBuffer(0);
+   const r=await fetch(self.url,{headers:{Range:`bytes=${lo}-${hi-1}`},cache:'no-store'});
+   if(!(r.ok||r.status===206))throw Error('Foundry model range read failed: HTTP '+r.status);
+   if(r.status===200&&(lo!==0||hi!==self.size))throw Error('Foundry model endpoint did not honor byte-range loading');
+   return await r.arrayBuffer()
+  }}
+ }
+}
+async function autoloadFoundryModel(){
+ const q=new URLSearchParams(location.search),projectId=q.get('project_id');
+ if(!projectId||q.get('autoload')!=='1')return;
+ setBadge('Locating latest governed Foundry GGUF…',gpu.available);
+ const infoResponse=await fetch(`/api/projects/${encodeURIComponent(projectId)}/runtime-export/model-info`,{cache:'no-store'});
+ if(!infoResponse.ok){let detail='HTTP '+infoResponse.status;try{const x=await infoResponse.json();detail=x.detail||detail}catch(_){}throw Error(detail)}
+ const info=await infoResponse.json();
+ const file=new FoundryRemoteFile(info.url||`/api/projects/${encodeURIComponent(projectId)}/runtime-export/model`,info.name,info.size,info.last_modified_ms);
+ await loadFile(file)
+}
+
+class NormalGGUFReader{
+ constructor(file){this.file=file;this.header=null}
+ async init(){
+  const magic=new Uint8Array(await this.file.slice(0,4).arrayBuffer());
+  if(td.decode(magic)!=='GGUF')throw Error('Selected file is neither a normal GGUF nor an NHSC1 n_*.gguf file.');
+  this.header={
+    size:this.file.size,
+    dataOffset:0,
+    originalName:this.file.name,
+    blockCount:0,
+    format:'GGUF'
+  };
+  return this
+ }
+ async read(offset,length){
+  if(offset<0||length<0)throw Error('Invalid GGUF read');
+  if(offset>=this.file.size||length===0)return new Uint8Array();
+  return new Uint8Array(await this.file.slice(offset,Math.min(this.file.size,offset+length)).arrayBuffer())
+ }
+ async block(){throw Error('Normal GGUF files do not use NHSC1 blocks')}
+}
+
+class A3Reader{
+ constructor(file){
+  this.file=file;this.header=null;this.entries=[];this.starts=[];
+  this.cache=new Map();this.cacheBytes=0;this.cacheLimit=512*1024*1024;
+  this.pending=new Map();this.payloadCache=new Map();
+  this.parallel=Math.max(1,Number($('nhscParallel')?.value||12));
+  this.stats={physicalBytes:0,decodedBytes:0,blocks:0,batches:0,started:0}
+ }
+ async slice(o,n){
+  const b=new Uint8Array(await this.file.slice(o,o+n).arrayBuffer());
+  this.stats.physicalBytes+=b.byteLength;return b
+ }
+ async init(){
+  this.stats.started=performance.now();
+  const fixed=await this.slice(0,70),v=new DataView(fixed.buffer,fixed.byteOffset,fixed.byteLength);
+  const magic=td.decode(fixed.slice(0,8));if(magic!=='NHSC1V3\0')throw Error('This is not an NHSC1-VFS A3 n_*.gguf file.');
+  const ver=v.getUint8(8);if(ver!==3)throw Error('Unsupported NHSC1 version '+ver);
+  const size=u64(v,10),dataOffset=u64(v,18),digest=fixed.slice(26,58);
+  const prefixBlock=v.getUint32(58,true),tensorBlock=v.getUint32(62,true),prefixWindow=v.getUint16(66,true),tensorWindow=v.getUint16(68,true);
+  const nlB=await this.slice(70,2),nl=new DataView(nlB.buffer).getUint16(0,true),nameB=await this.slice(72,nl);
+  const tail=await this.slice(72+nl,16),tv=new DataView(tail.buffer,tail.byteOffset,tail.byteLength),blockCount=u64(tv,0),indexOffset=u64(tv,8);
+  this.header={size,dataOffset,digest,originalName:td.decode(nameB),prefixBlock,tensorBlock,prefixWindow,tensorWindow,blockCount,indexOffset};
+  const isz=37,total=blockCount*isz,ib=await this.slice(indexOffset,total),iv=new DataView(ib.buffer,ib.byteOffset,ib.byteLength);
+  for(let i=0;i<blockCount;i++){
+   const o=i*isz;
+   const e={start:u64(iv,o),rawLen:iv.getUint32(o+8,true),op:iv.getUint8(o+12),ref:i64(iv,o+13),payloadOff:u64(iv,o+21),payloadLen:iv.getUint32(o+29,true),crc:iv.getUint32(o+33,true)};
+   this.entries.push(e);this.starts.push(e.start)
+  }
+  this.cacheLimit=Number($('cacheSize').value||512)*1024*1024;
+  this.parallel=Math.max(1,Number($('nhscParallel')?.value||12));
+  return this
+ }
+ put(i,b){
+  if(this.cache.has(i)){this.cacheBytes-=this.cache.get(i).byteLength;this.cache.delete(i)}
+  this.cache.set(i,b);this.cacheBytes+=b.byteLength;
+  while(this.cacheBytes>this.cacheLimit&&this.cache.size>1){
+   const k=this.cache.keys().next().value,d=this.cache.get(k);this.cache.delete(k);this.cacheBytes-=d.byteLength
+  }
+ }
+ async prefetchPayloads(indices){
+  const need=[];
+  for(const i of indices){
+   const e=this.entries[i];
+   if(!e||e.payloadLen<=0||e.op===1||e.op===11||e.op===12||this.cache.has(i)||this.pending.has(i)||this.payloadCache.has(i))continue;
+   need.push(i)
+  }
+  if(!need.length)return;
+
+  // A3 payloads are written in index order. Read adjacent payloads in batches
+  // so a 47 MB tensor does not trigger hundreds of tiny File.slice() calls.
+  const groups=[];let g=null;const MAX=32*1024*1024;
+  for(const i of need){
+   const e=this.entries[i],end=e.payloadOff+e.payloadLen;
+   if(!g||end-g.start>MAX||e.payloadOff-g.end>4096){
+    g={start:e.payloadOff,end,items:[i]};groups.push(g)
+   }else{g.end=end;g.items.push(i)}
+  }
+
+  let next=0;
+  const worker=async()=>{
+   for(;;){
+    const gi=next++;if(gi>=groups.length)return;
+    const group=groups[gi],buf=await this.slice(group.start,group.end-group.start);
+    this.stats.batches++;
+    for(const i of group.items){
+     const e=this.entries[i],lo=e.payloadOff-group.start;
+     this.payloadCache.set(i,buf.subarray(lo,lo+e.payloadLen))
+    }
+   }
+  };
+  const n=Math.min(Math.max(1,Math.ceil(this.parallel/3)),groups.length);
+  await Promise.all(Array.from({length:n},worker))
+ }
+ async block(i,stack=new Set()){
+  if(stack.has(i))throw Error('Reference cycle');
+  if(this.cache.has(i)){
+   const b=this.cache.get(i);this.cache.delete(i);this.cache.set(i,b);return b
+  }
+  if(this.pending.has(i))return await this.pending.get(i);
+  const nextStack=new Set(stack);nextStack.add(i);
+  const promise=this._decodeBlock(i,nextStack).finally(()=>this.pending.delete(i));
+  this.pending.set(i,promise);return await promise
+ }
+ async _decodeBlock(i,stack){
+  if(i<0||i>=this.entries.length)throw Error('Block index outside archive');
+  const e=this.entries[i];let raw;
+  if(e.op===1)raw=new Uint8Array(e.rawLen);
+  else if(e.op===11||e.op===12){
+   raw=(await this.block(e.ref,stack)).slice();if(e.op===12)raw.reverse()
+  }else{
+   let cp=this.payloadCache.get(i);
+   if(cp)this.payloadCache.delete(i);else cp=await this.slice(e.payloadOff,e.payloadLen);
+   const p=await gunzip2(cp);
+   if(e.op===0)raw=p;
+   else if(e.op===2)raw=sparseDecode(p,e.rawLen);
+   else if(e.op===3)raw=word4Decode(p,e.rawLen);
+   else if(e.op===4)raw=deltaDecode(p,e.rawLen,4);
+   else if(e.op===5)raw=deltaDecode(p,e.rawLen,8);
+   else if(e.op===6)raw=laneDecode(p,e.rawLen,2);
+   else if(e.op===7)raw=laneDecode(p,e.rawLen,4);
+   else if(e.op===8)raw=laneDecode(p,e.rawLen,8);
+   else if(e.op===9)raw=bitplaneDecode(p,e.rawLen);
+   else if(e.op===10)raw=tokenDecode(p);
+   else if(e.op===13||e.op===14){
+    let base=(await this.block(e.ref,stack)).slice();if(e.op===14)base.reverse();raw=patchDecode(base,p)
+   }else throw Error('Unknown NHSC1 opcode '+e.op)
+  }
+  if(raw.byteLength!==e.rawLen)throw Error('Decoded block length mismatch');
+  if(crc32(raw)!==e.crc)throw Error('CRC failure in block '+i);
+  this.stats.blocks++;this.stats.decodedBytes+=raw.byteLength;this.put(i,raw);return raw
+ }
+ find(offset){
+  let lo=0,hi=this.starts.length;
+  while(lo<hi){const m=(lo+hi)>>1;if(this.starts[m]<=offset)lo=m+1;else hi=m}
+  return Math.max(0,lo-1)
+ }
+ async read(offset,length){
+  if(offset>=this.header.size||length<=0)return new Uint8Array();
+  const end=Math.min(this.header.size,offset+length),indices=[];
+  let i=this.find(offset);
+  while(i<this.entries.length&&this.entries[i].start<end)indices.push(i++);
+  await this.prefetchPayloads(indices);
+
+  const out=new Uint8Array(end-offset);let next=0;
+  const worker=async()=>{
+   for(;;){
+    const j=next++;if(j>=indices.length)return;
+    const bi=indices[j],e=this.entries[bi],b=await this.block(bi);
+    const lo=Math.max(offset,e.start)-e.start,hi=Math.min(end,e.start+e.rawLen)-e.start;
+    if(hi>lo)out.set(b.subarray(lo,hi),Math.max(offset,e.start)-offset)
+   }
+  };
+  const n=Math.min(this.parallel,indices.length||1);
+  await Promise.all(Array.from({length:n},worker));return out
+ }
+ preloadReport(){
+  const sec=Math.max(.001,(performance.now()-this.stats.started)/1000);
+  return {
+   blocks:this.stats.blocks,decodedBytes:this.stats.decodedBytes,
+   physicalBytes:this.stats.physicalBytes,batches:this.stats.batches,
+   decodedMBps:this.stats.decodedBytes/sec/1024/1024,
+   physicalMBps:this.stats.physicalBytes/sec/1024/1024,seconds:sec
+  }
+ }
+}
+
+class Cursor{
+ constructor(a){this.a=a;this.v=new DataView(a.buffer,a.byteOffset,a.byteLength);this.p=0}
+ need(n){if(this.p+n>this.a.length)throw Error('GGUF metadata is truncated')}
+ bytes(n){this.need(n);const b=this.a.slice(this.p,this.p+n);this.p+=n;return b}
+ u32(){this.need(4);const x=this.v.getUint32(this.p,true);this.p+=4;return x}
+ u64(){this.need(8);const x=Number(this.v.getBigUint64(this.p,true));this.p+=8;return x}
+ str(){const n=this.u64();return td.decode(this.bytes(n))}
+ skipValue(t,key,keep=false){
+  const sz={0:1,1:1,2:2,3:2,4:4,5:4,6:4,7:1,10:8,11:8,12:8};
+  if(t===8)return this.str();
+  if(t!==9){if(!(t in sz))throw Error('Unsupported metadata type '+t);const b=this.bytes(sz[t]),v=new DataView(b.buffer,b.byteOffset,b.byteLength);if(t===4)return v.getUint32(0,true);if(t===10)return Number(v.getBigUint64(0,true));if(t===6)return v.getFloat32(0,true);if(t===7)return !!v.getUint8(0);return keep?b:null}
+  const et=this.u32(),count=this.u64();
+  if(et===8){let vals=keep&&count<300000?[]:null;for(let i=0;i<count;i++){const s=this.str();if(vals)vals.push(s)}return vals||{array:true,type:et,count}}
+  if(!(et in sz))throw Error('Unsupported array type '+et);const bytes=count*sz[et];this.bytes(bytes);return {array:true,type:et,count}
+ }
+}
+async function parseGGUF(r){
+ async function parsePrefix(prefix){
+  const c=new Cursor(prefix);
+  if(td.decode(c.bytes(4))!=='GGUF')throw Error('Selected file does not begin with GGUF');
+  const version=c.u32(),tensorCount=c.u64(),metadataCount=c.u64(),meta={};
+  let nexusMetaCount=0;
+  for(let i=0;i<metadataCount;i++){
+    const key=c.str(),t=c.u32();
+    const keep=[
+      'general.name','general.architecture','general.type','general.file_type',
+      'general.quantization_version','general.alignment',
+      'tokenizer.ggml.model','tokenizer.ggml.pre'
+    ].includes(key) || key.startsWith('nexus.');
+    const val=c.skipValue(t,key,keep);
+    meta[key]=val;
+    if(key.startsWith('nexus.'))nexusMetaCount++;
+  }
+
+  const qtypes={},sample=[];
+  let nexusTensorCount=0,mistralTensorCount=0,transformerTensorCount=0;
+  for(let i=0;i<tensorCount;i++){
+    const name=c.str(),nd=c.u32(),dims=[];
+    for(let d=0;d<nd;d++)dims.push(c.u64());
+    const qt=c.u32(),rel=c.u64();
+    qtypes[qt]=(qtypes[qt]||0)+1;
+
+    const ln=name.toLowerCase();
+    if(ln.includes('nexus'))nexusTensorCount++;
+    if(/^blk\.\d+\./.test(ln)||/^layers\.\d+\./.test(ln)||ln.includes('.attn_')||ln.includes('.ffn_'))transformerTensorCount++;
+    if(ln.includes('attn_q')||ln.includes('attn_k')||ln.includes('attn_v')||ln.includes('ffn_gate')||ln.includes('ffn_up')||ln.includes('ffn_down'))mistralTensorCount++;
+
+    if(sample.length<30)sample.push({name,dims,qt,rel})
+  }
+
+  const align=(typeof meta['general.alignment']==='number'&&meta['general.alignment']>0)?meta['general.alignment']:32;
+  const dataOffset=Math.ceil(c.p/align)*align;
+  return {
+    version,tensorCount,metadataCount,meta,qtypes,sample,dataOffset,directoryEnd:c.p,
+    hints:{nexusMetaCount,nexusTensorCount,mistralTensorCount,transformerTensorCount}
+  }
+ }
+
+ if(r instanceof A3Reader){
+  const prefix=await r.read(0,r.header.dataOffset);
+  const parsed=await parsePrefix(prefix);
+  parsed.dataOffset=r.header.dataOffset;
+  return parsed
+ }
+
+ let want=Math.min(r.file.size,4*1024*1024);
+ while(true){
+  try{
+   const prefix=await r.read(0,want);
+   const parsed=await parsePrefix(prefix);
+   r.header.dataOffset=parsed.dataOffset;
+   return parsed
+  }catch(e){
+   const msg=String(e&&e.message||e);
+   if(want>=r.file.size)throw e;
+   if(!/truncated|EOF|outside|need|string/i.test(msg))throw e;
+   want=Math.min(r.file.size,want*2)
+  }
+ }
+}
+
+async function initGPU(){
+ async function acquire(withLimits,wantSubgroups){
+  const adapter=await navigator.gpu.requestAdapter({
+   powerPreference:$('powerPref').value||'high-performance'
+  });
+  if(!adapter)throw Error('No WebGPU adapter returned');
+
+  const subgroupLanguage=!!(
+   navigator.gpu.wgslLanguageFeatures &&
+   navigator.gpu.wgslLanguageFeatures.has('subgroup_id')
+  );
+  const hasSubgroups=!!(
+   wantSubgroups &&
+   subgroupLanguage &&
+   adapter.features &&
+   adapter.features.has('subgroups')
+  );
+
+  const requiredFeatures=[];
+  if(hasSubgroups)requiredFeatures.push('subgroups');
+
+  const desc={requiredFeatures};
+  if(withLimits){
+   desc.requiredLimits={
+    maxBufferSize:Number(adapter.limits.maxBufferSize),
+    maxStorageBufferBindingSize:Number(adapter.limits.maxStorageBufferBindingSize)
+   }
+  }
+  const device=await adapter.requestDevice(desc);
+  return {adapter,device,hasSubgroups}
+ }
+
+ try{
+  if(!navigator.gpu)throw Error('WebGPU API is not exposed by this browser');
+
+  let pair;
+  try{
+   pair=await acquire(true,true)
+  }catch(first){
+   try{
+    pair=await acquire(false,true)
+   }catch(second){
+    pair=await acquire(false,false)
+   }
+  }
+
+  const adapter=pair.adapter,device=pair.device,info=adapter.info||{};
+  const label=[info.vendor,info.architecture,info.device,info.description]
+   .filter(Boolean).join(' · ')||'High-performance WebGPU adapter';
+
+  const subgroupMin=Number(info.subgroupMinSize||0);
+  const subgroupMax=Number(info.subgroupMaxSize||0);
+  // With a 256-thread workgroup, min subgroup size >= 16 guarantees
+  // num_subgroups <= subgroup_size for the second-stage reduction.
+  const subgroupSafe=!!(pair.hasSubgroups && subgroupMin>=16);
+
+  gpu={
+   available:true,label,adapter,device,info,
+   f16:adapter.features&&adapter.features.has('shader-f16'),
+   subgroups:subgroupSafe,
+   subgroupMinSize:subgroupMin,
+   subgroupMaxSize:subgroupMax,
+   subgroupReason:subgroupSafe
+    ?('available · '+subgroupMin+'-'+subgroupMax)
+    :(pair.hasSubgroups?'disabled: subgroupMinSize '+subgroupMin+' < 16':'not exposed'),
+   limits:device.limits,lostInfo:null,lastGPUError:null,
+   generation:(gpu.generation||0)+1
+  };
+
+  device.lost.then(info=>{
+   gpu.available=false;
+   gpu.lostInfo={
+    reason:String(info.reason||'unknown'),
+    message:String(info.message||'WebGPU device lost')
+   };
+   $('gpuDot').className='dot';
+   $('gpuMini').textContent='WebGPU device lost';
+   setBadge('GPU device lost · reload model');
+   try{refreshRuntimeInfo()}catch(_){}
+  });
+
+  device.addEventListener('uncapturederror',ev=>{
+   const msg=String(ev.error&&ev.error.message||ev.error||'WebGPU uncaptured error');
+   gpu.lastGPUError=msg;
+   console.error('WebGPU uncaptured error:',ev.error)
+  });
+
+  $('gpuMini').textContent=label;
+  $('gpuDot').className='dot ok';
+  setBadge('WebGPU · '+label+(gpu.subgroups?' · subgroups':''),true)
+ }catch(e){
+  gpu={
+   available:false,label:e.message,adapter:null,device:null,info:null,
+   f16:false,subgroups:false,subgroupMinSize:0,subgroupMaxSize:0,
+   subgroupReason:'unavailable',limits:null,lostInfo:null,
+   lastGPUError:String(e.message||e)
+  };
+  $('gpuMini').textContent='WebGPU unavailable';
+  $('gpuDot').className='dot';
+  setBadge('WebGPU unavailable')
+ }
+ refreshRuntimeInfo()
+}
+
+
+function classifyModel(m,r){
+ const name=String(m.meta['general.name']||r.header.originalName||'').toLowerCase();
+ const arch=String(m.meta['general.architecture']||'').toLowerCase();
+ const q4Types=Object.entries(m.qtypes)
+   .filter(([k])=>(TYPE_NAMES[k]||'').startsWith('Q4'))
+   .map(([k,v])=>({type:TYPE_NAMES[k],count:v}));
+ const q4Count=q4Types.reduce((a,x)=>a+x.count,0);
+ const hints=m.hints||{};
+
+ const nexusByIdentity=
+   name.includes('nexus') ||
+   arch.includes('nexus') ||
+   (hints.nexusMetaCount||0)>0 ||
+   (hints.nexusTensorCount||0)>0;
+
+ const mistralFamily=
+   arch.includes('mistral') ||
+   arch.includes('ministral') ||
+   name.includes('mistral') ||
+   name.includes('ministral');
+
+ const transformerLike=(hints.transformerTensorCount||0)>0 || (hints.mistralTensorCount||0)>0;
+ const isNHSC=r instanceof A3Reader;
+
+ let profile='GENERIC_GGUF',label='Generic GGUF',compatible=true,reason='GGUF structure parsed.';
+ if(nexusByIdentity){
+   profile='NEXUS';
+   label='NEXUS GGUF';
+   compatible=true;
+   reason='NEXUS identity detected from model name, architecture, metadata, or tensor names.';
+ }else if(mistralFamily && q4Count>0){
+   profile='MISTRAL_Q4';
+   label='Mistral / Ministral Q4';
+   compatible=true;
+   reason='Mistral-family architecture with Q4-family tensors detected.';
+ }else if(mistralFamily && q4Count===0){
+   profile='MISTRAL_NON_Q4';
+   label='Mistral / Ministral non-Q4';
+   compatible=true;
+   reason='Mistral-family GGUF detected, but no Q4-family tensors were found.';
+ }else if(transformerLike && q4Count>0){
+   profile='TRANSFORMER_Q4';
+   label='Transformer Q4 GGUF';
+   compatible=true;
+   reason='Transformer-style tensor layout with Q4 tensors detected.';
+ }
+
+ return {
+   profile,label,compatible,reason,isNHSC,q4Types,q4Count,
+   name:String(m.meta['general.name']||r.header.originalName||'Unnamed model'),
+   arch:String(m.meta['general.architecture']||'unknown')
+ };
+}
+
+async function loadFile(file){
+ busy=true;setBadge('Opening model…');
+ try{
+  const first8=new Uint8Array(await file.slice(0,8).arrayBuffer());
+  const sig8=td.decode(first8);
+  const isNHSC=sig8==='NHSC1V3\0';
+  const isGGUF=td.decode(first8.slice(0,4))==='GGUF';
+
+  if(!isNHSC&&!isGGUF){
+   throw Error('Choose an NHSC1 n_*.gguf file or a normal GGUF model.');
+  }
+
+  if(isNHSC){
+   reader=await new A3Reader(file).init();
+   setBadge('Parsing NHSC1 virtual GGUF…');
+  }else{
+   reader=await new NormalGGUFReader(file).init();
+   setBadge('Parsing normal GGUF…');
+  }
+
+  model=await parseGGUF(reader);
+  model.profile=classifyModel(model,reader);
+
+  // Explicitly support the three requested paths:
+  // 1. any NHSC1 A3 file whose reconstructed payload is valid GGUF
+  // 2. normal Mistral/Ministral Q4
+  // 3. NEXUS GGUF, even with a custom architecture/quantization mix
+  if(!model.profile.compatible)throw Error('The GGUF parsed but did not match a supported model profile.');
+
+  loaded=true;
+  const sourceLabel=isNHSC?'NHSC1 compressed':'normal GGUF';
+  const q4Label=model.profile.q4Types.length
+    ?model.profile.q4Types.map(x=>x.type+' × '+x.count.toLocaleString()).join(', ')
+    :'no Q4 tensors';
+
+  $('modelTitle').textContent=model.profile.name;
+  $('modelMini').textContent=model.profile.name;
+  const sub=$('sub');if(sub)sub.textContent=model.profile.label+' loaded and indexed.';
+  setBadge((gpu.available?'WebGPU ready · ':'')+model.profile.label,gpu.available);
+
+  newChat();
+  addAssistant(
+   'Loaded '+model.profile.name+' directly from '+file.name+'.',
+   sourceLabel+' · '+model.profile.label+' · '+model.profile.arch+
+   ' · '+q4Label+' · '+model.tensorCount.toLocaleString()+' tensors'
+  );
+ }catch(e){
+  loaded=false;reader=null;model=null;
+  addAssistant('Unable to load the model: '+e.message);
+  setBadge('Load failed')
+ }finally{
+  busy=false;refreshRuntimeInfo()
+ }
+}
+
+$('fileInput').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)loadFile(f);e.target.value=''});
+
+function refreshRuntimeInfo(){
+ const m=model,r=reader,p=m&&m.profile?m.profile:null;
+ const q=m?Object.entries(m.qtypes).map(([k,v])=>(TYPE_NAMES[k]||('type '+k))+' × '+v.toLocaleString()).join('\n'):'—';
+ const isNHSC=r instanceof A3Reader;
+ const source=r?(isNHSC?'NHSC1 A3 compressed GGUF':'Normal GGUF'):'—';
+ const logical=r?r.header.size:0,physical=r?r.file.size:0;
+ const q4=p&&p.q4Types.length?p.q4Types.map(x=>x.type+' × '+x.count.toLocaleString()).join('\n'):'None detected';
+
+ $('runtimeInfo').innerHTML=
+`<b>Browser compute</b>
+${esc(gpu.available?gpu.label:'WebGPU unavailable or blocked')}
+
+<b>Compatibility profile</b>
+${esc(p?p.label:'—')}
+
+<b>Profile reason</b>
+${esc(p?p.reason:'—')}
+
+<b>Source format</b>
+${esc(source)}
+
+<b>Physical model file</b>
+${esc(r?r.file.name:'No model loaded')}
+
+<b>Virtual / original GGUF identity</b>
+${esc(r?r.header.originalName:'—')}
+
+<b>Logical / physical size</b>
+${r?(logical/1024/1024).toFixed(1)+' MiB / '+(physical/1024/1024).toFixed(1)+' MiB':'—'}
+
+<b>Architecture</b>
+${esc(m?(m.meta['general.architecture']||'—'):'—')}
+
+<b>GGUF / tensors / metadata</b>
+${m?'v'+m.version+' · '+m.tensorCount.toLocaleString()+' tensors · '+m.metadataCount.toLocaleString()+' metadata entries':'—'}
+
+<b>Q4 tensors</b>
+${esc(q4)}
+
+<b>All tensor encodings</b>
+${esc(q)}
+
+<b>NEXUS hints</b>
+${m?('metadata keys: '+(m.hints.nexusMetaCount||0)+' · named tensors: '+(m.hints.nexusTensorCount||0)):'—'}
+
+<b>NHSC1 blocks</b>
+${isNHSC?r.entries.length.toLocaleString():'Not applicable — direct GGUF reads'}
+
+<b>Supported loading paths</b>
+✓ NHSC1 n_*.gguf
+✓ Mistral / Ministral 14B Q4 GGUF
+✓ NEXUS GGUF
+✓ Generic transformer Q4 GGUF
+
+<b>Runtime state</b>
+Standalone HTML · adaptive GGUF runtime
+Normal GGUF direct reads
+NHSC1 A3 block reconstruction
+Per-block CRC verification for NHSC1
+WebGPU adapter detection
+No llama executable or library
+
+<b>Inference status</b>
+The loader now accepts all three requested model families. Full browser-native transformer execution still requires WebGPU/WGSL kernels matching the loaded architecture and tensor quantization.`;
+}
+
+async function verifyAllBlocks(){
+ if(!reader){addAssistant('Load a GGUF model first.');return}if(!(reader instanceof A3Reader)){addAssistant('This is a normal GGUF, so there are no NHSC1 blocks to verify. The browser reads it directly.');return}
+ const bar=$('verifyBar');bar.style.width='0%';showRuntime();
+ try{
+  for(let i=0;i<reader.entries.length;i++){await reader.block(i);if((i&7)===0){bar.style.width=((i+1)/reader.entries.length*100).toFixed(1)+'%';await new Promise(r=>setTimeout(r,0))}}
+  bar.style.width='100%';addAssistant('NHSC1 block verification passed. Every decoded block matched its stored CRC.','Verified '+reader.entries.length.toLocaleString()+' blocks')
+ }catch(e){addAssistant('NHSC1 verification failed: '+e.message)}
+}
+
+function sendMessage(){
+ if(busy)return;const p=$('prompt'),text=p.value.trim();if(!text)return;p.value='';resizeBox();addUser(text);
+ if(history.length===0){chatTitle=text.replace(/\s+/g,' ').slice(0,36);updateRail()}
+ if(!loaded){addAssistant('Load an NHSC1 n_*.gguf, Mistral Q4 GGUF, or NEXUS GGUF first.');return}
+ const arch=model.meta['general.architecture']||'unknown';const profile=model.profile?model.profile.label:'GGUF';
+ addAssistant(
+  'The '+profile+' model is loaded and its GGUF tensors are accessible. Browser-native generation for '+arch+' still requires the matching WebGPU/WGSL transformer kernels; loading compatibility is active for NHSC1, Mistral Q4, and NEXUS GGUF.',
+  'Model loaded · WebGPU '+(gpu.available?'available':'not active')
+ );
+ history.push({user:text,assistant:'browser kernel pending'})
+}
+
+
+/* ========================================================================
+   TURN-BASED LOCAL MEMORY / LEARNING
+   - Persistent facts in localStorage
+   - Short episodic turn memory
+   - User corrections override older keyed facts
+   - Relevant memories injected into each new user turn
+   - This is contextual learning, not weight mutation
+   ======================================================================== */
+class TurnMemoryStore{
+ constructor(){
+  this.key='nexus_native_memory_v2';
+  this.data={version:2,enabled:true,facts:[],episodes:[]};
+  this.load()
+ }
+ load(){
+  try{
+   const x=localStorage.getItem(this.key);
+   if(x){const d=JSON.parse(x);if(d&&Array.isArray(d.facts)&&Array.isArray(d.episodes))this.data=d}
+  }catch(_){}
+ }
+ save(){
+  try{localStorage.setItem(this.key,JSON.stringify(this.data))}catch(_){}
+  try{renderMemory()}catch(_){}
+ }
+ norm(s){return String(s||'').trim().replace(/\s+/g,' ')}
+ id(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random()).slice(0,36)}
+ upsert(key,text,kind='fact',priority=1){
+  text=this.norm(text);if(!text)return false;
+  const now=Date.now(),k=key||('fact:'+text.toLowerCase().slice(0,80));
+  let f=this.data.facts.find(x=>x.key===k);
+  if(f){f.text=text;f.kind=kind;f.priority=Math.max(f.priority||1,priority);f.updated=now}
+  else this.data.facts.push({id:this.id(),key:k,text,kind,priority,created:now,updated:now,uses:0});
+  this.data.facts=this.data.facts.sort((a,b)=>(b.priority-a.priority)||(b.updated-a.updated)).slice(0,80);
+  this.save();return true
+ }
+ learnUser(text){
+  const s=this.norm(text), learned=[];
+  if(!s)return learned;
+  const add=(k,t,kind='fact',p=1)=>{if(this.upsert(k,t,kind,p))learned.push(t)};
+  let m;
+  if((m=s.match(/^remember(?: that)?\s+(.+)/i))) add('explicit:'+m[1].toLowerCase().slice(0,60),m[1],'explicit',5);
+  if((m=s.match(/^(?:my name is|call me)\s+([^,.!?;]+)/i))) add('identity:name','The user’s name is '+m[1]+'.','identity',5);
+  if((m=s.match(/^(?:i am|i'm|i’m)\s+([^,.!?;]+)/i))){
+   const v=m[1].trim();
+   if(v.length<100){
+    if(/\b(?:military|tech|technician|engineer|manager|director|doctor|nurse|teacher|professor|analyst|developer|soldier|sailor|aviator|mechanic|officer|sergeant|sgt)\b/i.test(v)){
+     add('work:occupation','The user’s occupation or professional role is '+v+'.','work',5)
+    }else add('identity:'+v.toLowerCase().slice(0,50),'The user says they are '+v+'.','identity',4)
+   }
+  }
+  if((m=s.match(/^i work(?: as| in| for)?\s+([^.!?;]+)/i))) add('work','The user works '+m[0].replace(/^i work/i,'').trim()+'.','work',4);
+  if((m=s.match(/^(?:i live in|i'm from|i am from)\s+([^,.!?;]+)/i))) add('location','The user is from/lives in '+m[1]+'.','location',4);
+  if((m=s.match(/^my favorite\s+(.+?)\s+is\s+([^.!?;]+)/i))) add('favorite:'+m[1].toLowerCase(),'The user’s favorite '+m[1]+' is '+m[2]+'.','preference',3);
+  if((m=s.match(/^i (?:like|love|prefer)\s+([^.!?;]+)/i))) add('pref:'+m[1].toLowerCase().slice(0,60),'The user likes/prefers '+m[1]+'.','preference',3);
+  if((m=s.match(/^i (?:don't like|do not like|dislike|hate)\s+([^.!?;]+)/i))) add('avoid:'+m[1].toLowerCase().slice(0,60),'The user dislikes '+m[1]+'.','preference',3);
+  if(/^(?:no[, ]|actually\b|correction\b|that's wrong\b|that is wrong\b)/i.test(s)) add('correction:'+Date.now(), 'User correction: '+s,'correction',6);
+  if(!s.includes('?')&&s.length<=180&&/^(?:i|my)\b/i.test(s)){
+   this.addEpisode(s,'',true)
+  }
+  return learned
+ }
+ addEpisode(user,assistant='',silent=false){
+  user=this.norm(user);assistant=this.norm(assistant);
+  if(!user)return;
+  const last=this.data.episodes[this.data.episodes.length-1];
+  if(last&&last.user===user){if(assistant)last.assistant=assistant;last.ts=Date.now()}
+  else this.data.episodes.push({user,assistant,ts:Date.now()});
+  this.data.episodes=this.data.episodes.slice(-16);
+  if(!silent)this.save();else this.save()
+ }
+ learnTurn(user,assistant){this.addEpisode(user,assistant)}
+ forget(query){
+  const q=this.norm(query).toLowerCase();
+  const before=this.data.facts.length;
+  this.data.facts=this.data.facts.filter(f=>!f.text.toLowerCase().includes(q)&&!f.key.toLowerCase().includes(q));
+  this.save();return before-this.data.facts.length
+ }
+ clear(){this.data={version:2,enabled:true,facts:[],episodes:[]};this.save()}
+ relevant(query){
+  const q=this.norm(query).toLowerCase();
+  const all=/remember|about me|who am i|what do you know|memory/.test(q);
+  const words=new Set(q.split(/[^a-z0-9]+/).filter(x=>x.length>=4&&!['what','that','this','with','have','about','your','youre','from'].includes(x)));
+  const scored=this.data.facts.map(f=>{
+   let s=(f.priority||1)*3;
+   for(const w of words)if(f.text.toLowerCase().includes(w))s+=6;
+   s+=Math.max(0,3-(Date.now()-(f.updated||0))/86400000/30);
+   return [s,f]
+  }).sort((a,b)=>b[0]-a[0]);
+  return (all?scored:scored.slice(0,10)).map(x=>x[1])
+ }
+ systemSnapshot(){
+  if(!this.data.enabled||!this.data.facts.length)return '';
+  return this.data.facts.slice().sort((a,b)=>(b.priority-a.priority)||(b.updated-a.updated))
+    .slice(0,12).map(f=>'- '+f.text).join('\n')
+ }
+ context(query){
+  if(!this.data.enabled)return '';
+  const facts=this.relevant(query).slice(0,6);
+  if(!facts.length)return '';
+  return 'Background memory from facts the user previously stated. Use only if relevant; do not repeat this block verbatim.\n'
+    +facts.map(f=>'- '+f.text).join('\n')
+ }
+ enrich(text){
+  const c=this.context(text);
+  return c ? c+'\n\nCurrent user message:\n'+text : text
+ }
+}
+const NEXUS_MEMORY=new TurnMemoryStore();
+
+function renderMemory(){
+ const el=$('memoryInfo');if(!el)return;
+ const f=NEXUS_MEMORY.data.facts,e=NEXUS_MEMORY.data.episodes;
+ if(!f.length&&!e.length){el.innerHTML='No persistent memories yet.<br><br>Tell the model things such as “I’m military”, “my name is…”, “I prefer…”, or “remember that…”.';return}
+ let h='<b>Remembered facts ('+f.length+')</b>\n';
+ h+=f.map(x=>'• '+esc(x.text)).join('\n')||'None';
+ h+='\n\n<b>Recent learned turns ('+e.length+')</b>\n';
+ h+=e.slice(-6).map(x=>'• '+esc(x.user)+(x.assistant?' → '+esc(x.assistant.slice(0,120)):'')).join('\n')||'None';
+ el.innerHTML=h
+}
+function showMemory(){renderMemory();$('memoryBg').classList.add('show')}
+function hideMemory(){$('memoryBg').classList.remove('show')}
+function clearMemory(){if(confirm('Clear all persistent NEXUS memory?'))NEXUS_MEMORY.clear()}
+function exportMemory(){
+ const blob=new Blob([JSON.stringify(NEXUS_MEMORY.data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nexus-memory.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+
+
+/* ========================================================================
+   LLAMA-STYLE QUALITY SAMPLER
+   Defaults track llama.cpp's common chat sampler closely:
+   top-k 40, top-p .95, min-p .05, temp .8.
+   Adds repeat/presence/frequency penalties and DRY-like sequence penalty.
+   ======================================================================== */
+
+function reasoningPolicy(){return String($('reasonPolicy')?.value||'ultra')}
+function visibleDecodingPolicy(){return String($('visiblePolicy')?.value||'auto')}
+function classifyReasoningNeed(text){
+ const raw=String(text||'').trim(),t=raw.toLowerCase();
+ const cap=Math.max(0,Number($('reasonBudget')?.value??64));
+ const policy=reasoningPolicy();
+ if(policy==='reference')return {level:'reference',budget:192,gpuHidden:false,why:'reference v15 path'};
+ if(policy==='fixed')return {level:'fixed',budget:cap,gpuHidden:false,why:'user fixed budget'};
+ const casual=raw.length<140&&(/^(hi|hey|hello|yo|good (morning|afternoon|evening)|how are you|how's it going|thanks|thank you|ok|okay|cool|nice|who are you|what are you)[?.!, ]*$/i.test(raw)||/^(hey|hi|hello)[ ,.!]/i.test(raw));
+ let score=0;
+ if(raw.length>140)score++;
+ if(raw.length>420)score++;
+ if((raw.match(/\?/g)||[]).length>1)score++;
+ if(/\b(explain|why|how does|compare|contrast|analy[sz]e|evaluate|assess|recommend|strategy|trade[- ]?off|design|debug|derive|prove|calculate|architecture|research|paper|essay|apply|scenario|implication|root cause)\b/i.test(t))score+=2;
+ if(/```|\b(code|python|javascript|wgsl|equation|formula|math|algorithm|tensor|quant|gguf|gpu|shader)\b/i.test(raw))score++;
+ if(/\b(think deeply|deep reasoning|step by step|be rigorous|thorough|comprehensive)\b/i.test(t))score+=2;
+ if(policy==='ultra'){
+  if(casual)return {level:'instant',budget:Math.min(cap,4),gpuHidden:true,why:'Stable Turbo casual coherence path'};
+  let budget=8,level='simple';
+  if(score>=4){budget=48;level='complex'}else if(score>=2){budget=24;level='normal'}
+  return {level,budget:Math.min(cap,budget),gpuHidden:true,why:'Stable Turbo prompt complexity'}
+ }
+ // v16-compatible 2× Adaptive
+ if(casual)return {level:'instant',budget:Math.min(cap,8),gpuHidden:true,why:'v16 casual/identity fast path'};
+ let budget=16,level='simple';
+ if(score>=4){budget=64;level='complex'}else if(score>=2){budget=32;level='normal'}
+ return {level,budget:Math.min(cap,budget),gpuHidden:true,why:'v16 adaptive prompt complexity'}
+}
+function shouldGPUVisible(reasonPlan){
+ const p=visibleDecodingPolicy();
+ if(p==='greedy')return true;
+ if(p==='quality')return false;
+ return reasonPlan.level==='instant'||reasonPlan.level==='simple'
+}
+function reasoningQualityNote(){
+ const p=reasoningPolicy(),b=Number($('reasonBudget')?.value??64),v=visibleDecodingPolicy();
+ if(p==='ultra')return 'Stable Turbo uses 4/8/24/48 hidden tokens. Visible decode: '+v+'. Reference 192 remains available.';
+ if(p==='adaptive')return '2× Adaptive uses 8/16/32/64 hidden tokens. Visible decode: '+v+'.';
+ if(p==='reference')return 'Reference 192 preserves the original v15 reasoning/sampling path.';
+ return 'Fixed hidden reasoning budget '+b+' tokens. Visible decode: '+v+'.'
+}
+
+function sampleSettings(){
+ return {
+  temp:Math.max(0,Number($('sampleTemp')?.value??0.7)),
+  topK:Math.max(1,Math.floor(Number($('sampleTopK')?.value??40))),
+  topP:Math.min(1,Math.max(0.01,Number($('sampleTopP')?.value??0.95))),
+  minP:Math.min(1,Math.max(0,Number($('sampleMinP')?.value??0.05))),
+  repeat:Math.max(1,Number($('repeatPenalty')?.value??1.0)),
+  lastN:64,
+  presence:0.0,
+  frequency:0.0,
+  dry:Math.max(0,Number($('dryMultiplier')?.value??0.0)),
+  dryBase:1.75,
+  dryAllowed:2,
+  seed:Math.trunc(Number($('sampleSeed')?.value??-1))
+ }
+}
+function makeRNG(seed){
+ let a=(seed<0?(crypto.getRandomValues(new Uint32Array(1))[0]>>>0):(seed>>>0))||0x6D2B79F5;
+ return function(){
+  a|=0;a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296
+ }
+}
+function heapTopK(logits,k){
+ const ids=[],vals=[];
+ const swap=(a,b)=>{[ids[a],ids[b]]=[ids[b],ids[a]];[vals[a],vals[b]]=[vals[b],vals[a]]};
+ const up=i=>{while(i>0){const p=(i-1)>>1;if(vals[p]<=vals[i])break;swap(p,i);i=p}};
+ const down=i=>{for(;;){let l=i*2+1,r=l+1,m=i;if(l<vals.length&&vals[l]<vals[m])m=l;if(r<vals.length&&vals[r]<vals[m])m=r;if(m===i)break;swap(i,m);i=m}};
+ for(let i=0;i<logits.length;i++){
+  const v=logits[i];if(!Number.isFinite(v))continue;
+  if(ids.length<k){ids.push(i);vals.push(v);up(ids.length-1)}
+  else if(v>vals[0]){ids[0]=i;vals[0]=v;down(0)}
+ }
+ const out=ids.map((id,i)=>({id,logit:vals[i]}));
+ out.sort((a,b)=>b.logit-a.logit);return out
+}
+class LlamaStyleSampler{
+ constructor(tok){
+  this.tok=tok;this.history=[];this.resetRng();
+  this.thinkStart=tok.specialId('[THINK]');
+  this.thinkEnd=tok.specialId('[/THINK]');
+  this.allowedControls=new Set([tok.eos,this.thinkStart,this.thinkEnd].filter(x=>x>=0))
+ }
+ resetRng(){this.rng=makeRNG(sampleSettings().seed)}
+ reset(){this.history=[];this.resetRng()}
+ beginTurn(){this.history=[]}
+ observe(id){this.history.push(id);if(this.history.length>512)this.history.shift()}
+ observeMany(ids){for(const id of ids)this.observe(id)}
+ dryPenalty(candidate,opt){
+  if(opt.dry<=0||this.history.length<4)return 0;
+  const h=this.history,last=Math.min(opt.lastN,h.length);
+  const start=h.length-last,allowed=opt.dryAllowed;
+  let best=0;
+  for(let len=allowed;len<=Math.min(10,last-1);len++){
+   const suffix=h.slice(h.length-len);
+   for(let p=start;p+len<h.length-len+1;p++){
+    let ok=true;
+    for(let j=0;j<len;j++)if(h[p+j]!==suffix[j]){ok=false;break}
+    if(ok&&h[p+len]===candidate){best=Math.max(best,len)}
+   }
+  }
+  return best>=allowed ? opt.dry*Math.pow(opt.dryBase,best-allowed) : 0
+ }
+ sample(input){
+  const opt=sampleSettings();
+  const logits=new Float32Array(input); // safe mutable copy
+  // Do not generate UNK/BOS or unrelated control markers.
+  if(logits.length>0)logits[0]=-Infinity;
+  if(this.tok.bos>=0&&this.tok.bos<logits.length)logits[this.tok.bos]=-Infinity;
+  for(let i=0;i<Math.min(this.tok.types.length,logits.length);i++){
+   if(Number(this.tok.types[i])===3&&!this.allowedControls.has(i))logits[i]=-Infinity
+  }
+
+  const recent=this.history.slice(-opt.lastN),counts=new Map();
+  for(const id of recent)counts.set(id,(counts.get(id)||0)+1);
+  for(const [id,c] of counts){
+   if(id<0||id>=logits.length)continue;
+   let v=logits[id];
+   if(opt.repeat>1)v=v<=0?v*opt.repeat:v/opt.repeat;
+   v-=opt.frequency*c;
+   if(c>0)v-=opt.presence;
+   logits[id]=v
+  }
+
+  // Pull a wider pool before applying DRY so penalized loop continuations can fall out.
+  let cand=heapTopK(logits,Math.min(logits.length,Math.max(opt.topK,96)));
+  for(const c of cand)c.logit-=this.dryPenalty(c.id,opt);
+  cand.sort((a,b)=>b.logit-a.logit);
+  cand=cand.slice(0,Math.min(opt.topK,cand.length));
+  if(!cand.length)throw Error('Sampler found no valid tokens');
+
+  if(opt.temp<=0||cand.length===1)return cand[0].id;
+
+  // min-p relative to best pre-temperature probability
+  if(opt.minP>0){
+   const threshold=cand[0].logit+Math.log(opt.minP);
+   cand=cand.filter(c=>c.logit>=threshold);
+   if(!cand.length)cand=[heapTopK(logits,1)[0]]
+  }
+
+  // top-p is applied before temperature in llama.cpp's default chain.
+  let mx=Math.max(...cand.map(c=>c.logit));
+  let raw=cand.map(c=>Math.exp(c.logit-mx));
+  let total=raw.reduce((a,b)=>a+b,0),cum=0,kept=[];
+  for(let i=0;i<cand.length;i++){
+   kept.push(cand[i]);cum+=raw[i]/total;
+   if(cum>=opt.topP&&kept.length>=1)break
+  }
+  cand=kept;
+
+  mx=Math.max(...cand.map(c=>c.logit/opt.temp));
+  const w=cand.map(c=>Math.exp(c.logit/opt.temp-mx));
+  const sum=w.reduce((a,b)=>a+b,0);
+  let r=this.rng()*sum;
+  for(let i=0;i<cand.length;i++){r-=w[i];if(r<=0)return cand[i].id}
+  return cand[cand.length-1].id
+ }
+}
+
+/* ========================================================================
+   ADAPTIVE GGUF EXECUTION RUNTIME
+   Detects the loaded GGUF and selects:
+     - Mistral/Ministral transformer WebGPU runtime
+     - NEXUS GRU native runtime
+     - NEXUS transformer runtime
+   NHSC1 and normal GGUF use the same tensor execution layer; only read()
+   differs underneath.
+   ======================================================================== */
+
+const QINFO={
+  0:{n:1,b:4,name:'F32'},1:{n:1,b:2,name:'F16'},2:{n:32,b:18,name:'Q4_0'},
+  3:{n:32,b:20,name:'Q4_1'},6:{n:32,b:22,name:'Q5_0'},7:{n:32,b:24,name:'Q5_1'},
+  8:{n:32,b:34,name:'Q8_0'},12:{n:256,b:144,name:'Q4_K'},
+  13:{n:256,b:176,name:'Q5_K'},14:{n:256,b:210,name:'Q6_K'},
+  24:{n:1,b:1,name:'I8'},25:{n:1,b:2,name:'I16'},26:{n:1,b:4,name:'I32'},
+  27:{n:1,b:8,name:'I64'},28:{n:1,b:8,name:'F64'},30:{n:1,b:2,name:'BF16'}
+};
+
+function f16(u){
+  const s=(u>>15)&1,e=(u>>10)&31,f=u&1023;
+  if(e===0)return (s?-1:1)*Math.pow(2,-14)*(f/1024);
+  if(e===31)return f?NaN:(s?-Infinity:Infinity);
+  return (s?-1:1)*Math.pow(2,e-15)*(1+f/1024)
+}
+function bf16(u){
+  const a=new ArrayBuffer(4),v=new DataView(a);v.setUint32(0,u<<16,true);return v.getFloat32(0,true)
+}
+function tensorBytes(t){
+  const qi=QINFO[t.qt];if(!qi)throw Error('Unsupported GGML tensor type '+t.qt);
+  let ne=1;for(const d of t.dims)ne*=d;
+  if(ne%qi.n)throw Error(t.name+': tensor elements not aligned to '+qi.name+' block size');
+  return ne/qi.n*qi.b
+}
+function getK4ScaleMin(sc,j){
+  if(j<4)return [sc[j]&63,sc[j+4]&63];
+  return [(sc[j+4]&15)|((sc[j-4]>>6)<<4),(sc[j+4]>>4)|((sc[j]>>6)<<4)]
+}
+function dequant(raw,qt){
+  const q=QINFO[qt];if(!q)throw Error('Unsupported dequant type '+qt);
+  const dv=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);
+  if(qt===0){return new Float32Array(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength))}
+  if(qt===1){const o=new Float32Array(raw.length/2);for(let i=0;i<o.length;i++)o[i]=f16(dv.getUint16(i*2,true));return o}
+  if(qt===30){const o=new Float32Array(raw.length/2);for(let i=0;i<o.length;i++)o[i]=bf16(dv.getUint16(i*2,true));return o}
+  if(qt===24){const o=new Float32Array(raw.length);for(let i=0;i<o.length;i++)o[i]=(raw[i]<<24)>>24;return o}
+  if(qt===8){
+    const nb=raw.length/34,o=new Float32Array(nb*32);
+    for(let bi=0;bi<nb;bi++){const p=bi*34,d=f16(dv.getUint16(p,true));for(let j=0;j<32;j++)o[bi*32+j]=d*((raw[p+2+j]<<24)>>24)}
+    return o
+  }
+  if(qt===2){
+    const nb=raw.length/18,o=new Float32Array(nb*32);
+    for(let bi=0;bi<nb;bi++){const p=bi*18,d=f16(dv.getUint16(p,true));for(let j=0;j<16;j++){const x=raw[p+2+j];o[bi*32+j]=d*((x&15)-8);o[bi*32+j+16]=d*((x>>4)-8)}}
+    return o
+  }
+  if(qt===3){
+    const nb=raw.length/20,o=new Float32Array(nb*32);
+    for(let bi=0;bi<nb;bi++){const p=bi*20,d=f16(dv.getUint16(p,true)),m=f16(dv.getUint16(p+2,true));for(let j=0;j<16;j++){const x=raw[p+4+j];o[bi*32+j]=d*(x&15)+m;o[bi*32+j+16]=d*(x>>4)+m}}
+    return o
+  }
+  if(qt===6||qt===7){
+    const block=qt===6?22:24,nb=raw.length/block,o=new Float32Array(nb*32);
+    for(let bi=0;bi<nb;bi++){
+      const p=bi*block,d=f16(dv.getUint16(p,true)),m=qt===7?f16(dv.getUint16(p+2,true)):0;
+      const hp=p+(qt===7?4:2),qp=hp+4;
+      const h=dv.getUint32(hp,true);
+      for(let j=0;j<16;j++){
+        const x=raw[qp+j],h0=((h>>j)&1)<<4,h1=((h>>(j+16))&1)<<4;
+        let a=(x&15)|h0,b=(x>>4)|h1;if(qt===6){a-=16;b-=16}
+        o[bi*32+j]=a*d+m;o[bi*32+j+16]=b*d+m
+      }
+    }return o
+  }
+  if(qt===12||qt===13){
+    const block=qt===12?144:176,nb=raw.length/block,o=new Float32Array(nb*256);
+    for(let bi=0;bi<nb;bi++){
+      const p=bi*block,d=f16(dv.getUint16(p,true)),dm=f16(dv.getUint16(p+2,true));
+      const sc=raw.slice(p+4,p+16);let qh=null,qp;
+      if(qt===13){qh=raw.slice(p+16,p+48);qp=p+48}else qp=p+16;
+      let is=0,u1=1,u2=2,op=bi*256;
+      for(let group=0;group<4;group++){
+        let [s1,m1]=getK4ScaleMin(sc,is),[s2,m2]=getK4ScaleMin(sc,is+1);
+        const d1=d*s1,min1=dm*m1,d2=d*s2,min2=dm*m2;
+        for(let l=0;l<32;l++){
+          const qb=raw[qp+l];let a=qb&15,b=qb>>4;
+          if(qt===13){if(qh[l]&u1)a+=16;if(qh[l]&u2)b+=16}
+          o[op++]=d1*a-min1
+        }
+        for(let l=0;l<32;l++){
+          const qb=raw[qp+l];let b=qb>>4;if(qt===13&&qh[l]&u2)b+=16;o[op++]=d2*b-min2
+        }
+        qp+=32;is+=2;if(qt===13){u1<<=2;u2<<=2}
+      }
+    }return o
+  }
+  if(qt===14){
+    const nb=raw.length/210,o=new Float32Array(nb*256);
+    for(let bi=0;bi<nb;bi++){
+      const p=bi*210,ql=raw.slice(p,p+128),qh=raw.slice(p+128,p+192);
+      const sc=new Int8Array(raw.buffer,raw.byteOffset+p+192,16),d=f16(dv.getUint16(p+208,true));
+      let out=bi*256,qlp=0,qhp=0,scp=0;
+      for(let n=0;n<256;n+=128){
+        for(let l=0;l<32;l++){
+          const is=Math.floor(l/16);
+          const q1=((ql[qlp+l]&15)|(((qh[qhp+l]>>0)&3)<<4))-32;
+          const q2=((ql[qlp+l+32]&15)|(((qh[qhp+l]>>2)&3)<<4))-32;
+          const q3=((ql[qlp+l]>>4)|(((qh[qhp+l]>>4)&3)<<4))-32;
+          const q4=((ql[qlp+l+32]>>4)|(((qh[qhp+l]>>6)&3)<<4))-32;
+          o[out+l]=d*sc[scp+is]*q1;o[out+l+32]=d*sc[scp+is+2]*q2;
+          o[out+l+64]=d*sc[scp+is+4]*q3;o[out+l+96]=d*sc[scp+is+6]*q4
+        }
+        out+=128;qlp+=64;qhp+=32;scp+=8
+      }
+    }return o
+  }
+  throw Error('Dequantizer unavailable for '+q.name)
+}
+
+class RC{
+  constructor(a){this.a=a;this.v=new DataView(a.buffer,a.byteOffset,a.byteLength);this.p=0}
+  need(n){if(this.p+n>this.a.length)throw Error('runtime-prefix-truncated')}
+  bytes(n){this.need(n);const b=this.a.slice(this.p,this.p+n);this.p+=n;return b}
+  u32(){this.need(4);const x=this.v.getUint32(this.p,true);this.p+=4;return x}
+  i32(){this.need(4);const x=this.v.getInt32(this.p,true);this.p+=4;return x}
+  u64(){this.need(8);const x=Number(this.v.getBigUint64(this.p,true));this.p+=8;return x}
+  f32(){this.need(4);const x=this.v.getFloat32(this.p,true);this.p+=4;return x}
+  f64(){this.need(8);const x=this.v.getFloat64(this.p,true);this.p+=8;return x}
+  str(){const n=this.u64();return td.decode(this.bytes(n))}
+}
+function readScalar(c,t){
+  if(t===8)return c.str();if(t===0)return c.bytes(1)[0];if(t===1)return (c.bytes(1)[0]<<24)>>24;
+  if(t===2){const b=c.bytes(2);return new DataView(b.buffer,b.byteOffset,2).getUint16(0,true)}
+  if(t===3){const b=c.bytes(2);return new DataView(b.buffer,b.byteOffset,2).getInt16(0,true)}
+  if(t===4)return c.u32();if(t===5)return c.i32();if(t===6)return c.f32();if(t===7)return !!c.bytes(1)[0];
+  if(t===10)return c.u64();if(t===11){const b=c.bytes(8);return Number(new DataView(b.buffer,b.byteOffset,8).getBigInt64(0,true))}
+  if(t===12)return c.f64();throw Error('Unsupported metadata scalar '+t)
+}
+function readMeta(c,t,key){
+  if(t!==9)return readScalar(c,t);
+  const et=c.u32(),count=c.u64();
+  const keep=key==='tokenizer.ggml.tokens'||key==='tokenizer.ggml.merges'||key==='tokenizer.ggml.scores'||
+             key==='tokenizer.ggml.token_type'||key.startsWith('nexus.');
+  if(et===8){if(!keep){for(let i=0;i<count;i++)c.str();return {array:true,count,type:et}}const a=new Array(count);for(let i=0;i<count;i++)a[i]=c.str();return a}
+  const sizes={0:1,1:1,2:2,3:2,4:4,5:4,6:4,7:1,10:8,11:8,12:8},sz=sizes[et];
+  if(!sz)throw Error('Unsupported metadata array type '+et);
+  if(!keep){c.bytes(count*sz);return {array:true,count,type:et}}
+  const a=new Array(count);for(let i=0;i<count;i++)a[i]=readScalar(c,et);return a
+}
+async function buildExecutionModel(r,base){
+  const prefix=await r.read(0,base.dataOffset),c=new RC(prefix);
+  if(td.decode(c.bytes(4))!=='GGUF')throw Error('Execution model is not GGUF');
+  const version=c.u32(),tc=c.u64(),mc=c.u64(),meta={};
+  for(let i=0;i<mc;i++){const k=c.str(),t=c.u32();meta[k]=readMeta(c,t,k)}
+  const tensors=new Map(),list=[];
+  for(let i=0;i<tc;i++){
+    const name=c.str(),nd=c.u32(),dims=[];for(let d=0;d<nd;d++)dims.push(c.u64());
+    const qt=c.u32(),rel=c.u64(),t={name,dims,qt,rel,abs:base.dataOffset+rel};t.nbytes=tensorBytes(t);
+    tensors.set(name,t);list.push(t)
+  }
+  return {version,meta,tensors,list,dataOffset:base.dataOffset}
+}
+function mget(em,arch,suffix,def=null){
+  for(const k of [`${arch}.${suffix}`,`mistral.${suffix}`,`ministral.${suffix}`,`mistral3.${suffix}`,`llama.${suffix}`,`nexus.${suffix}`])if(em.meta[k]!=null)return em.meta[k];
+  return def
+}
+function pickTensor(em,names,required=true){
+  for(const n of names)if(em.tensors.has(n))return em.tensors.get(n);
+  if(required)throw Error('Missing required tensor: '+names.join(' | '));return null
+}
+function identifyRuntime(em,profile){
+  const arch=String(em.meta['general.architecture']||profile?.arch||'').toLowerCase();
+  const name=String(em.meta['general.name']||'').toLowerCase();
+  const keys=[...em.tensors.keys()];
+  const has=n=>em.tensors.has(n);
+  const gru={
+    emb:pickTensor(em,['token_embd.weight','embedding.weight','embeddings.weight','nexus.embedding.weight'],false),
+    wih:pickTensor(em,['gru.weight_ih_l0','gru.weight_ih','wih','nexus.gru.wih','nexus.wih'],false),
+    whh:pickTensor(em,['gru.weight_hh_l0','gru.weight_hh','whh','nexus.gru.whh','nexus.whh'],false),
+    bih:pickTensor(em,['gru.bias_ih_l0','gru.bias_ih','bih','nexus.gru.bih'],false),
+    bhh:pickTensor(em,['gru.bias_hh_l0','gru.bias_hh','bhh','nexus.gru.bhh'],false),
+    out:pickTensor(em,['output.weight','lm_head.weight','wout','nexus.output.weight'],false)
+  };
+  if((arch.includes('nexus')||name.includes('nexus'))&&gru.emb&&gru.wih&&gru.whh&&gru.out)
+    return {kind:'NEXUS_GRU',label:'NEXUS GRU',gru};
+  const transformer=has('blk.0.attn_q.weight')&&has('blk.0.attn_k.weight')&&has('blk.0.attn_v.weight')&&has('blk.0.ffn_down.weight');
+  if(transformer&&(arch.includes('mistral')||arch.includes('ministral')))return {kind:'MISTRAL',label:'Mistral / Ministral Transformer'};
+  if(transformer&&(arch.includes('nexus')||name.includes('nexus')))return {kind:'NEXUS_TRANSFORMER',label:'NEXUS Transformer'};
+  if(transformer)return {kind:'TRANSFORMER',label:'GGUF Transformer'};
+  return {kind:'UNSUPPORTED',label:'Unrecognized tensor graph',missing:'No supported GRU or blk.N attention/FFN tensor graph found.'}
+}
+
+/* -----------------------------------------------------------------------
+   AMD-OPTIMIZED WEBGPU TENSOR RUNTIME
+
+   Design:
+   - Quantized tensor bytes remain Q4/Q5/Q6 in VRAM.
+   - Each matrix is uploaded ONCE, split only when a WebGPU storage-binding
+     limit requires it.
+   - WGSL decodes the requested quantized weight inside the dot product.
+   - One workgroup computes one output row with 256 lanes and a reduction.
+   - Activations/output use reusable GPU scratch buffers.
+   - A single GPU submission processes all row chunks of one matrix.
+   ----------------------------------------------------------------------- */
+
+const AMD_PROFILE={
+ targetVRAMBytes:16*1024*1024*1024,
+ targetRAMCacheBytes:1024*1024*1024,
+ residentBytes:0,
+ residentTensorCount:0,
+ streamingTensorCount:0,
+ uploadStarted:0,
+ uploadFinished:0
+};
+
+function currentVRAMBudget(){
+ const el=$('vramBudget');
+ return Math.max(8,Number(el?el.value:16)||16)*1024*1024*1024
+}
+function currentRAMCache(){
+ const el=$('ramCache');
+ return Math.max(256,Number(el?el.value:1024)||1024)*1024*1024
+}
+function fmtBytes(n){
+ if(n>=1024**3)return (n/1024**3).toFixed(2)+' GB';
+ if(n>=1024**2)return (n/1024**2).toFixed(1)+' MB';
+ return (n/1024).toFixed(1)+' KB'
+}
+
+function referenceDotQuant(raw,qt,x){
+ const dv=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);let sum=0;
+ if(qt===12){
+  const nb=raw.length/144;
+  for(let bi=0;bi<nb;bi++){const p=bi*144,d=f16(dv.getUint16(p,true)),dm=f16(dv.getUint16(p+2,true)),scales=raw.slice(p+4,p+16);
+   for(let g=0;g<8;g++){const sm=getK4ScaleMin(scales,g),qp=p+16+Math.floor(g/2)*32;for(let l=0;l<32;l++){const qb=raw[qp+l],qv=(g&1)?(qb>>4):(qb&15),col=bi*256+g*32+l;sum+=(d*sm[0]*qv-dm*sm[1])*x[col]}}}
+  return sum
+ }
+ if(qt===14){
+  const nb=raw.length/210;
+  for(let bi=0;bi<nb;bi++){const p=bi*210,d=f16(dv.getUint16(p+208,true));for(let section=0;section<2;section++){const qlp=p+section*64,qhp=p+128+section*32,scp=p+192+section*8,base=bi*256+section*128;
+    for(let l=0;l<32;l++){const is=Math.floor(l/16),q1=((raw[qlp+l]&15)|(((raw[qhp+l]>>0)&3)<<4))-32,q2=((raw[qlp+l+32]&15)|(((raw[qhp+l]>>2)&3)<<4))-32,q3=((raw[qlp+l]>>4)|(((raw[qhp+l]>>4)&3)<<4))-32,q4=((raw[qlp+l+32]>>4)|(((raw[qhp+l]>>6)&3)<<4))-32,s0=(raw[scp+is]<<24)>>24,s2=(raw[scp+is+2]<<24)>>24,s4=(raw[scp+is+4]<<24)>>24,s6=(raw[scp+is+6]<<24)>>24;sum+=d*s0*q1*x[base+l]+d*s2*q2*x[base+l+32]+d*s4*q3*x[base+l+64]+d*s6*q4*x[base+l+96]}}}
+  return sum
+ }
+ const w=dequant(raw,qt);for(let i=0;i<w.length;i++)sum+=w[i]*x[i];return sum
+}
+
+class QuantGPU{
+ constructor(device){
+  this.d=device;
+  this.pipeline=null;
+  this.pipelineBase=null;
+  this.pipelineSubgroup=null;
+  this.useSubgroups=false;
+  this.subgroupValidated=false;
+  this.subgroupFallbackReason='';
+  this.resident=new Map();
+  this.residentBytes=0;
+  this.xbuf=null;this.xcap=0;
+  this.ybuf=null;this.ycap=0;
+  this.readbuf=null;this.readcap=0;
+  this.cpuPinnedNames=new Set();
+ }
+
+ async init(){
+  if(this.pipeline)return;
+  const shader=`
+struct P {
+ rows: u32,
+ cols: u32,
+ qtype: u32,
+ row_bytes: u32,
+ row_base: u32,
+ local_base: u32,
+ _p1: u32,
+ _p2: u32,
+}
+
+@group(0) @binding(0) var<storage,read> W:array<u32>;
+@group(0) @binding(1) var<storage,read> X:array<f32>;
+@group(0) @binding(2) var<storage,read_write> Y:array<f32>;
+@group(0) @binding(3) var<uniform> p:P;
+
+var<workgroup> partial:array<f32,256>;
+
+fn b8(off:u32)->u32{
+ let w=W[off>>2u];
+ return (w>>((off&3u)*8u))&255u;
+}
+fn u16le(off:u32)->u32{
+ return b8(off)|(b8(off+1u)<<8u);
+}
+fn u32le(off:u32)->u32{
+ return b8(off)|(b8(off+1u)<<8u)|(b8(off+2u)<<16u)|(b8(off+3u)<<24u);
+}
+fn s8(v:u32)->i32{
+ if(v>=128u){return i32(v)-256;}
+ return i32(v);
+}
+fn half_to_f32(h:u32)->f32{
+ let sign=select(1.0,-1.0,(h&0x8000u)!=0u);
+ let e=(h>>10u)&31u;
+ let f=h&1023u;
+ if(e==0u){
+  if(f==0u){return sign*0.0;}
+  return sign*exp2(-14.0)*(f32(f)/1024.0);
+ }
+ if(e==31u){
+  return sign*3.402823466e38;
+ }
+ return sign*exp2(f32(i32(e)-15))*(1.0+f32(f)/1024.0);
+}
+fn kscale(base:u32,g:u32)->vec2<u32>{
+ if(g<4u){
+  return vec2<u32>(b8(base+4u+g)&63u,b8(base+8u+g)&63u);
+ }
+ let sc=(b8(base+4u+g+4u)&15u)|((b8(base+4u+g-4u)>>6u)<<4u);
+ let mn=(b8(base+4u+g+4u)>>4u)|((b8(base+4u+g)>>6u)<<4u);
+ return vec2<u32>(sc,mn);
+}
+fn weight(row:u32,col:u32)->f32{
+ let rb=row*p.row_bytes;
+ let qt=p.qtype;
+
+ if(qt==0u){
+  return bitcast<f32>(u32le(rb+col*4u));
+ }
+ if(qt==1u){
+  return half_to_f32(u16le(rb+col*2u));
+ }
+ if(qt==30u){
+  return bitcast<f32>(u16le(rb+col*2u)<<16u);
+ }
+
+ if(qt==2u){
+  let bi=col>>5u;let j=col&31u;let q=rb+bi*18u;
+  let d=half_to_f32(u16le(q));
+  let qb=b8(q+2u+(j&15u));
+  let v=select(qb&15u,qb>>4u,j>=16u);
+  return d*f32(i32(v)-8);
+ }
+ if(qt==3u){
+  let bi=col>>5u;let j=col&31u;let q=rb+bi*20u;
+  let d=half_to_f32(u16le(q));let mn=half_to_f32(u16le(q+2u));
+  let qb=b8(q+4u+(j&15u));
+  let v=select(qb&15u,qb>>4u,j>=16u);
+  return d*f32(v)+mn;
+ }
+ if(qt==6u){
+  let bi=col>>5u;let j=col&31u;let q=rb+bi*22u;
+  let d=half_to_f32(u16le(q));
+  let lo=b8(q+6u+(j&15u));
+  let nib=select(lo&15u,lo>>4u,j>=16u);
+  let hi=(b8(q+2u+(j>>3u))>>(j&7u))&1u;
+  return d*f32(i32(nib|(hi<<4u))-16);
+ }
+ if(qt==7u){
+  let bi=col>>5u;let j=col&31u;let q=rb+bi*24u;
+  let d=half_to_f32(u16le(q));let mn=half_to_f32(u16le(q+2u));
+  let lo=b8(q+8u+(j&15u));
+  let nib=select(lo&15u,lo>>4u,j>=16u);
+  let hi=(b8(q+4u+(j>>3u))>>(j&7u))&1u;
+  return d*f32(nib|(hi<<4u))+mn;
+ }
+ if(qt==8u){
+  let bi=col>>5u;let j=col&31u;let q=rb+bi*34u;
+  let d=half_to_f32(u16le(q));
+  return d*f32(s8(b8(q+2u+j)));
+ }
+
+ if(qt==12u){
+  let bi=col>>8u;let j=col&255u;let q=rb+bi*144u;
+  let d=half_to_f32(u16le(q));let dm=half_to_f32(u16le(q+2u));
+  let g=j>>5u;let l=j&31u;let sm=kscale(q,g);
+  let qb=b8(q+16u+(g>>1u)*32u+l);
+  let v=select(qb&15u,qb>>4u,(g&1u)!=0u);
+  return d*f32(sm.x)*f32(v)-dm*f32(sm.y);
+ }
+
+ if(qt==13u){
+  let bi=col>>8u;let j=col&255u;let q=rb+bi*176u;
+  let d=half_to_f32(u16le(q));let dm=half_to_f32(u16le(q+2u));
+  let g=j>>5u;let l=j&31u;let sm=kscale(q,g);
+  let qb=b8(q+48u+(g>>1u)*32u+l);
+  let lo=select(qb&15u,qb>>4u,(g&1u)!=0u);
+  let hi=(b8(q+16u+l)>>g)&1u;
+  let v=lo|(hi<<4u);
+  return d*f32(sm.x)*f32(v)-dm*f32(sm.y);
+ }
+
+ if(qt==14u){
+  let bi=col>>8u;let j=col&255u;let q=rb+bi*210u;
+  let section=j>>7u;
+  let g=(j>>5u)&3u;
+  let l=j&31u;
+  let shift=select(0u,4u,g>=2u);
+  let half=g&1u;
+  let qlb=b8(q+section*64u+half*32u+l);
+  let lo=(qlb>>shift)&15u;
+  let qhb=b8(q+128u+section*32u+l);
+  let hi=(qhb>>(g*2u))&3u;
+  let v=i32(lo|(hi<<4u))-32;
+  let sg=j>>4u;
+  let sc=s8(b8(q+192u+sg));
+  let d=half_to_f32(u16le(q+208u));
+  return d*f32(sc)*f32(v);
+ }
+
+ return 0.0;
+}
+
+@compute @workgroup_size(256)
+fn main(
+ @builtin(workgroup_id) wg:vec3<u32>,
+ @builtin(local_invocation_id) lid:vec3<u32>
+){
+ let r=wg.x;
+ if(r>=p.rows){return;}
+ let wr=p.local_base+r;
+ let lane=lid.x;
+ var acc:f32=0.0;
+ var c=lane;
+ loop{
+  if(c>=p.cols){break;}
+  acc=acc+weight(wr,c)*X[c];
+  c=c+256u;
+ }
+ partial[lane]=acc;
+ workgroupBarrier();
+
+ var stride:u32=128u;
+ loop{
+  if(stride==0u){break;}
+  if(lane<stride){partial[lane]=partial[lane]+partial[lane+stride];}
+  workgroupBarrier();
+  stride=stride>>1u;
+ }
+ if(lane==0u){Y[p.row_base+r]=partial[0];}
+}`;
+  const pm=shader.match(/struct\s+P\s*\{([\s\S]*?)\}/);
+  if(!pm)throw Error('WGSL QuantMatmul parameter struct P was not found');
+  const declared=new Set([...pm[1].matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*:/g)].map(x=>x[1]));
+  const used=new Set([...shader.matchAll(/\bp\.([A-Za-z_][A-Za-z0-9_]*)/g)].map(x=>x[1]));
+  const missing=[...used].filter(x=>!declared.has(x));
+  if(missing.length)throw Error('WGSL QuantMatmul parameter mismatch: undeclared p.'+missing.join(', p.'));
+
+  const module=this.d.createShaderModule({
+   label:'NEXUS QuantMatmul shader',code:shader
+  });
+  const pipelinePromise=this.d.createComputePipelineAsync({
+   label:'NEXUS QuantMatmul pipeline',layout:'auto',compute:{module,entryPoint:'main'}
+  });
+  const lostPromise=this.d.lost.then(info=>{throw Error('GPU device lost while compiling QuantMatmul: '+String(info.reason||'unknown')+(info.message?' · '+info.message:''))});
+  try{this.pipeline=await Promise.race([pipelinePromise,lostPromise])}
+  catch(e){throw Error('WGSL QuantMatmul pipeline failed: '+String(e&&e.message||e))};
+
+  this.pipelineBase=this.pipeline;
+
+  if(gpu.subgroups){
+   try{
+    const subgroupMain=`
+@compute @workgroup_size(256)
+fn main(
+ @builtin(workgroup_id) wg:vec3<u32>,
+ @builtin(local_invocation_index) lane:u32,
+ @builtin(subgroup_invocation_id) sid:u32,
+ @builtin(subgroup_id) sgid:u32,
+ @builtin(num_subgroups) nsg:u32
+){
+ let r=wg.x;
+ if(r>=p.rows){return;}
+ let wr=p.local_base+r;
+
+ var acc:f32=0.0;
+ var c=lane;
+ loop{
+  if(c>=p.cols){break;}
+  acc=acc+weight(wr,c)*X[c];
+  c=c+256u;
+ }
+
+ let subgroupSum=subgroupAdd(acc);
+ if(sid==0u){sgpartial[sgid]=subgroupSum;}
+ workgroupBarrier();
+
+ // Every subgroup executes this second reduction. On the guarded RDNA path,
+ // subgroup_size is large enough to cover all subgroup partials.
+ var part:f32=0.0;
+ if(sid<nsg){part=sgpartial[sid];}
+ let total=subgroupAdd(part);
+
+ if(sgid==0u && sid==0u){
+  Y[p.row_base+r]=total;
+ }
+}`;
+
+    let subgroupShader='enable subgroups;\nrequires subgroup_id;\n'+shader;
+    subgroupShader=subgroupShader.replace(
+     'var<workgroup> partial:array<f32,256>;',
+     'var<workgroup> sgpartial:array<f32,64>;'
+    );
+    subgroupShader=subgroupShader.replace(
+     /@compute @workgroup_size\(256\)[\s\S]*$/,
+     subgroupMain
+    );
+
+    const sgModule=this.d.createShaderModule({
+     label:'NEXUS QuantMatmul RDNA subgroup shader',
+     code:subgroupShader
+    });
+    this.pipelineSubgroup=await this.d.createComputePipelineAsync({
+     label:'NEXUS QuantMatmul RDNA subgroup pipeline',
+     layout:'auto',
+     compute:{module:sgModule,entryPoint:'main'}
+    })
+   }catch(e){
+    this.pipelineSubgroup=null;
+    this.subgroupFallbackReason='subgroup compile fallback · '+String(e&&e.message||e);
+    console.warn(this.subgroupFallbackReason)
+   }
+  }
+ }
+
+ pinCPU(tensors){for(const t of tensors||[])if(t)this.cpuPinnedNames.add(t.name)}
+ uploadBytes(buffer,data){
+  const src=new Uint8Array(data.buffer,data.byteOffset,data.byteLength);
+  const CHUNK=8*1024*1024; // stable Chromium/Dawn transfer size, 4-byte aligned
+  const aligned=Math.floor(src.byteLength/4)*4;
+  for(let off=0;off<aligned;off+=CHUNK){
+   const n=Math.min(CHUNK,aligned-off);
+   this.d.queue.writeBuffer(buffer,off,src,off,n)
+  }
+  if(aligned<src.byteLength){
+   const tail=new Uint8Array(4);tail.set(src.subarray(aligned));
+   this.d.queue.writeBuffer(buffer,aligned,tail)
+  }
+ }
+ makeBuffer(data,usage,label='NEXUS GPU upload'){
+  if(!gpu.available||this.d!==gpu.device)throw Error('WebGPU device is unavailable before '+label);
+  const size=Math.max(4,Math.ceil(data.byteLength/4)*4);
+  if(size>Number(this.d.limits.maxBufferSize)){
+   throw Error(label+' requires '+fmtBytes(size)+' but maxBufferSize is '+fmtBytes(Number(this.d.limits.maxBufferSize)))
+  }
+  let b;
+  try{
+   b=this.d.createBuffer({label,size,usage:usage|GPUBufferUsage.COPY_DST})
+  }catch(e){
+   throw Error(label+' createBuffer failed for '+fmtBytes(size)+': '+String(e&&e.message||e))
+  }
+  this.uploadBytes(b,data);return b
+ }
+
+ async ensureScratch(cols,rows){
+  const U=GPUBufferUsage;
+  const xb=Math.max(4,cols*4),yb=Math.max(4,rows*4);
+  if(!this.xbuf||this.xcap<xb){
+   if(this.xbuf)this.xbuf.destroy();
+   const xa=Math.ceil(xb/256)*256;
+   this.xbuf=this.d.createBuffer({size:xa,usage:U.STORAGE|U.COPY_DST});
+   this.xcap=xa
+  }
+  if(!this.ybuf||this.ycap<yb){
+   if(this.ybuf)this.ybuf.destroy();
+   const ya=Math.ceil(yb/256)*256;
+   this.ybuf=this.d.createBuffer({size:ya,usage:U.STORAGE|U.COPY_SRC|U.COPY_DST});
+   this.ycap=ya
+  }
+  if(!this.readbuf||this.readcap<yb){
+   if(this.readbuf)this.readbuf.destroy();
+   const ra=Math.ceil(yb/256)*256;
+   this.readbuf=this.d.createBuffer({size:ra,usage:U.COPY_DST|U.MAP_READ});
+   this.readcap=ra
+  }
+ }
+
+ async preloadTensor(reader,t,status){
+  await this.init();
+  if(this.resident.has(t.name))return this.resident.get(t.name);
+  if(t.dims.length<2)return null;
+
+  const qi=QINFO[t.qt];
+  if(!qi)throw Error(t.name+': unsupported quantization '+t.qt);
+  const cols=Number(t.dims[0]),rows=Number(t.dims[1]);
+  if(cols%qi.n)throw Error(t.name+': row is not quantization-block aligned');
+  const rowBytes=cols/qi.n*qi.b;
+  const bindLimit=Math.max(4*1024*1024,Number(this.d.limits.maxStorageBufferBindingSize||134217728));
+  const rowsPerChunk=Math.max(1,Math.floor((bindLimit-4096)/rowBytes));
+  const budget=currentVRAMBudget();
+  if(this.residentBytes+t.nbytes>budget){
+   AMD_PROFILE.streamingTensorCount++;
+   return null
+  }
+
+  const chunks=[];
+  const pinCPU=this.cpuPinnedNames.has(t.name);
+   const maxWG=Math.max(1,Number(this.d.limits.maxComputeWorkgroupsPerDimension||65535));
+  for(let rs=0;rs<rows;rs+=rowsPerChunk){
+   const nr=Math.min(rowsPerChunk,rows-rs);
+   const raw=await reader.read(t.abs+rs*rowBytes,nr*rowBytes);
+   const wb=this.makeBuffer(raw,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST,'Weight '+t.name+' rows '+rs+'-'+(rs+nr-1));
+   const segments=[];
+   for(let localBase=0;localBase<nr;localBase+=maxWG){
+    const segRows=Math.min(maxWG,nr-localBase);
+    const par=new Uint32Array([
+     segRows,cols,t.qt,rowBytes,
+     rs+localBase,localBase,0,0
+    ]);
+    const pb=this.makeBuffer(par,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);
+    segments.push({rowStart:rs+localBase,localBase,rows:segRows,param:pb})
+   }
+   chunks.push({rowStart:rs,rows:nr,weight:wb,segments,bytes:raw.byteLength,cpuRaw:pinCPU?raw:null});
+   this.residentBytes+=raw.byteLength;
+   AMD_PROFILE.residentBytes=this.residentBytes;
+   if(reader instanceof A3Reader && reader.cacheBytes>currentRAMCache()){
+    reader.cache.clear();reader.cacheBytes=0
+   }
+   if(status)status('Loading VRAM · '+fmtBytes(this.residentBytes)+' / '+fmtBytes(budget)+' · '+t.name)
+   await new Promise(r=>setTimeout(r,0))
+  }
+  const rec={tensor:t,cols,rows,rowBytes,chunks,bytes:t.nbytes,cpuPinned:pinCPU};
+  this.resident.set(t.name,rec);
+  AMD_PROFILE.residentTensorCount=this.resident.size;
+  return rec
+ }
+
+ async preload(reader,tensors,status){
+  AMD_PROFILE.uploadStarted=performance.now();
+  const unique=new Map();
+  for(const t of tensors)if(t&&t.dims.length>=2)unique.set(t.name,t);
+  let i=0;
+  for(const t of unique.values()){
+   i++;
+   if(status)status('VRAM preload '+i+'/'+unique.size+' · '+t.name);
+   await this.preloadTensor(reader,t,status)
+  }
+  AMD_PROFILE.uploadFinished=performance.now();
+ }
+
+ async temporaryChunks(reader,t){
+  const qi=QINFO[t.qt],cols=Number(t.dims[0]),rows=Number(t.dims[1]);
+  const rowBytes=cols/qi.n*qi.b;
+  const bindLimit=Math.max(4*1024*1024,Number(this.d.limits.maxStorageBufferBindingSize||134217728));
+  const rowsPerChunk=Math.max(1,Math.floor((bindLimit-4096)/rowBytes));
+  const chunks=[];
+  const maxWG=Math.max(1,Number(this.d.limits.maxComputeWorkgroupsPerDimension||65535));
+  for(let rs=0;rs<rows;rs+=rowsPerChunk){
+   const nr=Math.min(rowsPerChunk,rows-rs),raw=await reader.read(t.abs+rs*rowBytes,nr*rowBytes);
+   const wb=this.makeBuffer(raw,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST,'Streaming weight '+t.name+' rows '+rs+'-'+(rs+nr-1));
+   const segments=[];
+   for(let localBase=0;localBase<nr;localBase+=maxWG){
+    const segRows=Math.min(maxWG,nr-localBase);
+    const pb=this.makeBuffer(new Uint32Array([
+     segRows,cols,t.qt,rowBytes,rs+localBase,localBase,0,0
+    ]),GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);
+    segments.push({rowStart:rs+localBase,localBase,rows:segRows,param:pb})
+   }
+   chunks.push({rowStart:rs,rows:nr,weight:wb,segments,temp:true})
+  }
+  return {tensor:t,cols,rows,rowBytes,chunks,temp:true}
+ }
+
+ async selfTestRow(reader,t,rowIndex=0){
+  if(!t||t.dims.length<2)return {ok:true,skipped:true};
+  const qi=QINFO[t.qt];
+  if(!qi)return {ok:false,error:'unsupported qtype '+t.qt};
+
+  const cols=Number(t.dims[0]),rows=Number(t.dims[1]);
+  rowIndex=Math.max(0,Math.min(rows-1,Number(rowIndex)||0));
+  if(cols%qi.n)return {ok:false,error:'unaligned row'};
+
+  const rb=cols/qi.n*qi.b;
+  const raw=await reader.read(t.abs+rowIndex*rb,rb);
+  const x=new Float32Array(cols);
+  for(let i=0;i<cols;i++){
+   x[i]=Math.sin(i*0.0137+rowIndex*0.001)*0.25+
+        Math.cos(i*0.0031)*0.1
+  }
+  const expected=referenceDotQuant(raw,t.qt,x);
+
+  await this.init();
+  const U=GPUBufferUsage;
+
+  const runPipeline=async(pipeline)=>{
+   const wb=this.makeBuffer(raw,U.STORAGE|U.COPY_DST);
+   const xb=this.makeBuffer(x,U.STORAGE|U.COPY_DST);
+   const yb=this.d.createBuffer({size:4,usage:U.STORAGE|U.COPY_SRC});
+   const rbout=this.d.createBuffer({size:4,usage:U.COPY_DST|U.MAP_READ});
+   const pb=this.makeBuffer(
+    new Uint32Array([1,cols,t.qt,rb,0,0,0,0]),
+    U.UNIFORM|U.COPY_DST
+   );
+   const bg=this.d.createBindGroup({
+    layout:pipeline.getBindGroupLayout(0),
+    entries:[
+     {binding:0,resource:{buffer:wb}},
+     {binding:1,resource:{buffer:xb}},
+     {binding:2,resource:{buffer:yb}},
+     {binding:3,resource:{buffer:pb}}
+    ]
+   });
+   const enc=this.d.createCommandEncoder();
+   const pass=enc.beginComputePass();
+   pass.setPipeline(pipeline);
+   pass.setBindGroup(0,bg);
+   pass.dispatchWorkgroups(1);
+   pass.end();
+   enc.copyBufferToBuffer(yb,0,rbout,0,4);
+   this.d.queue.submit([enc.finish()]);
+   await this.d.queue.onSubmittedWorkDone();
+   await rbout.mapAsync(GPUMapMode.READ,0,4);
+   const actual=new Float32Array(
+    rbout.getMappedRange(0,4).slice(0)
+   )[0];
+   rbout.unmap();
+   wb.destroy();xb.destroy();yb.destroy();rbout.destroy();pb.destroy();
+   return actual
+  };
+
+  const baseActual=await runPipeline(this.pipelineBase);
+  const baseAbs=Math.abs(baseActual-expected);
+  const baseRel=baseAbs/Math.max(1e-5,Math.abs(expected));
+  if(!Number.isFinite(baseActual)||baseRel>=0.003){
+   return {
+    ok:false,expected,actual:baseActual,abs:baseAbs,rel:baseRel,
+    qtype:qi.name,tensor:t.name,row:rowIndex,path:'baseline'
+   }
+  }
+
+  if(this.pipelineSubgroup){
+   const sgActual=await runPipeline(this.pipelineSubgroup);
+   const sgAbs=Math.abs(sgActual-expected);
+   const sgRel=sgAbs/Math.max(1e-5,Math.abs(expected));
+
+   if(Number.isFinite(sgActual)&&sgRel<0.003){
+    this.pipeline=this.pipelineSubgroup;
+    this.useSubgroups=true;
+    this.subgroupValidated=true;
+    return {
+     ok:true,expected,actual:sgActual,abs:sgAbs,rel:sgRel,
+     qtype:qi.name,tensor:t.name,row:rowIndex,path:'subgroup'
+    }
+   }
+
+   this.pipeline=this.pipelineBase;
+   this.useSubgroups=false;
+   this.pipelineSubgroup=null;
+   this.subgroupFallbackReason=
+    'numeric subgroup fallback · '+qi.name+' relerr '+sgRel;
+   console.warn(this.subgroupFallbackReason)
+  }
+
+  return {
+   ok:true,expected,actual:baseActual,abs:baseAbs,rel:baseRel,
+   qtype:qi.name,tensor:t.name,row:rowIndex,path:'baseline'
+  }
+ }
+
+ async matvecMany(reader,tensors,x){
+  if(!tensors.length)return [];
+  await this.init();
+
+  const recs=[];
+  let totalRows=0,commonCols=null;
+  for(const t of tensors){
+    const rec=this.resident.get(t.name)||await this.temporaryChunks(reader,t);
+    if(commonCols==null)commonCols=rec.cols;
+    if(rec.cols!==commonCols)throw Error('Grouped matvec inputs have different column counts');
+    recs.push({rec,base:totalRows});
+    totalRows+=rec.rows
+  }
+  if(x.length!==commonCols)throw Error('Grouped matvec input length mismatch');
+
+  await this.ensureScratch(commonCols,totalRows);
+  this.d.queue.writeBuffer(this.xbuf,0,x.buffer,x.byteOffset,x.byteLength);
+
+  const enc=this.d.createCommandEncoder();
+  enc.clearBuffer(this.ybuf,0,totalRows*4);
+  const pass=enc.beginComputePass();
+  pass.setPipeline(this.pipeline);
+
+  const transientParams=[];
+  for(const item of recs){
+    const rec=item.rec;
+    for(const ch of rec.chunks){
+      for(const seg of ch.segments){
+        const par=new Uint32Array([
+          seg.rows,rec.cols,rec.tensor.qt,rec.rowBytes,
+          item.base+seg.rowStart,seg.localBase,0,0
+        ]);
+        const pb=this.makeBuffer(par,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);
+        transientParams.push(pb);
+        const bg=this.d.createBindGroup({
+          layout:this.pipeline.getBindGroupLayout(0),
+          entries:[
+            {binding:0,resource:{buffer:ch.weight}},
+            {binding:1,resource:{buffer:this.xbuf}},
+            {binding:2,resource:{buffer:this.ybuf}},
+            {binding:3,resource:{buffer:pb}}
+          ]
+        });
+        pass.setBindGroup(0,bg);
+        pass.dispatchWorkgroups(seg.rows)
+      }
+    }
+  }
+  pass.end();
+  enc.copyBufferToBuffer(this.ybuf,0,this.readbuf,0,totalRows*4);
+  this.d.queue.submit([enc.finish()]);
+
+  await this.readbuf.mapAsync(GPUMapMode.READ,0,totalRows*4);
+  const all=new Float32Array(this.readbuf.getMappedRange(0,totalRows*4).slice(0));
+  this.readbuf.unmap();
+
+  const outputs=[];
+  for(const item of recs){
+    outputs.push(all.slice(item.base,item.base+item.rec.rows));
+    if(item.rec.temp){
+      for(const ch of item.rec.chunks){ch.weight.destroy();ch.param.destroy()}
+    }
+  }
+  for(const pb of transientParams)pb.destroy();
+  return outputs
+ }
+
+ async matvec(reader,t,x){
+  await this.init();
+  const rec=this.resident.get(t.name)||await this.temporaryChunks(reader,t);
+  const cols=rec.cols,rows=rec.rows;
+  if(x.length!==cols)throw Error(t.name+': expected '+cols+' inputs, got '+x.length);
+  await this.ensureScratch(cols,rows);
+  this.d.queue.writeBuffer(this.xbuf,0,x.buffer,x.byteOffset,x.byteLength);
+  const enc=this.d.createCommandEncoder();
+  enc.clearBuffer(this.ybuf,0,rows*4);
+  const pass=enc.beginComputePass();
+  pass.setPipeline(this.pipeline);
+  for(const ch of rec.chunks){
+   for(const seg of ch.segments){
+    const bg=this.d.createBindGroup({
+     layout:this.pipeline.getBindGroupLayout(0),
+     entries:[
+      {binding:0,resource:{buffer:ch.weight}},
+      {binding:1,resource:{buffer:this.xbuf}},
+      {binding:2,resource:{buffer:this.ybuf}},
+      {binding:3,resource:{buffer:seg.param}}
+     ]
+    });
+    pass.setBindGroup(0,bg);
+    pass.dispatchWorkgroups(seg.rows)
+   }
+  }
+  pass.end();
+  enc.copyBufferToBuffer(this.ybuf,0,this.readbuf,0,rows*4);
+  this.d.queue.submit([enc.finish()]);
+  await this.readbuf.mapAsync(GPUMapMode.READ,0,rows*4);
+  const out=new Float32Array(this.readbuf.getMappedRange(0,rows*4).slice(0));
+  this.readbuf.unmap();
+  if(rec.temp){
+   for(const ch of rec.chunks){ch.weight.destroy();for(const seg of ch.segments)seg.param.destroy()}
+  }
+  return out
+ }
+}
+
+class TensorOps{
+ constructor(r,em){
+  this.r=r;this.em=em;
+  this.qgpu=gpu.available?new QuantGPU(gpu.device):null;
+  this.small=new Map()
+ }
+ pinCPU(tensors){if(this.qgpu)this.qgpu.pinCPU(tensors)}
+ async preload(tensors,status){
+  if(this.qgpu)await this.qgpu.preload(this.r,tensors,status)
+ }
+ async vector(t){
+  if(this.small.has(t.name))return this.small.get(t.name);
+  const a=dequant(await this.r.read(t.abs,t.nbytes),t.qt);
+  if(a.length<2_000_000)this.small.set(t.name,a);
+  return a
+ }
+ async row(t,i){
+  const cols=Number(t.dims[0]),rows=Number(t.dims[1]);
+  if(i<0||i>=rows)throw Error('Row out of range');
+  const qi=QINFO[t.qt];
+  if(!qi||cols%qi.n)throw Error(t.name+' row is not quant aligned');
+  const rb=cols/qi.n*qi.b;
+  const rec=this.qgpu&&this.qgpu.resident.get(t.name);
+  if(rec&&rec.cpuPinned){
+   for(const ch of rec.chunks){
+    if(i>=ch.rowStart&&i<ch.rowStart+ch.rows&&ch.cpuRaw){
+     const off=(i-ch.rowStart)*rb;
+     return dequant(ch.cpuRaw.subarray(off,off+rb),t.qt)
+    }
+   }
+  }
+  return dequant(await this.r.read(t.abs+i*rb,rb),t.qt)
+ }
+ async matvecMany(tensors,x){
+  if(this.qgpu&&this.qgpu.matvecMany)return await this.qgpu.matvecMany(this.r,tensors,x);
+  const o=[];for(const t of tensors)o.push(await this.matvec(t,x));return o
+ }
+ async matvec(t,x){
+  if(this.qgpu)return await this.qgpu.matvec(this.r,t,x);
+  const cols=Number(t.dims[0]),rows=Number(t.dims[1]),out=new Float32Array(rows);
+  const qi=QINFO[t.qt];if(!qi||cols%qi.n)throw Error(t.name+' row is not quant aligned');
+  const rb=cols/qi.n*qi.b;
+  for(let rr=0;rr<rows;rr++){
+   const w=dequant(await this.r.read(t.abs+rr*rb,rb),t.qt);
+   let s=0;for(let c=0;c<cols;c++)s+=w[c]*x[c];out[rr]=s
+  }
+  return out
+ }
+}
+
+function rms(x,w,eps){let s=0;for(let i=0;i<x.length;i++)s+=x[i]*x[i];const k=1/Math.sqrt(s/x.length+eps),o=new Float32Array(x.length);for(let i=0;i<x.length;i++)o[i]=x[i]*k*w[i];return o}
+function silu(x){return x/(1+Math.exp(-x))}
+function softmax(a){let m=-Infinity;for(const x of a)if(x>m)m=x;let s=0;const o=new Float32Array(a.length);for(let i=0;i<a.length;i++){o[i]=Math.exp(a[i]-m);s+=o[i]}for(let i=0;i<o.length;i++)o[i]/=s;return o}
+function add(a,b){const o=new Float32Array(a.length);for(let i=0;i<a.length;i++)o[i]=a[i]+b[i];return o}
+function yarnCorrDim(nDims,nCtxOrig,nRot,base){
+  return nDims*Math.log(nCtxOrig/(nRot*2*Math.PI))/(2*Math.log(base))
+}
+function llamaYarnAttnFactor(cfg){
+  const direct=Number(cfg.ropeAttnFactor??cfg.attnFactor??1);
+  return Number.isFinite(direct)&&direct>0?direct:1
+}
+function ropeGGMLYarn(a,pos,cfg,mode=0){
+  const out=a.slice(),d=a.length,half=d>>1;
+  const base=cfg.base||10000;
+  const factor=Math.max(1,cfg.factor||1);
+  const freqScale=1/factor;
+  const isYarn=String(cfg.type||'').toLowerCase()==='yarn'&&factor!==1;
+  const nCtxOrig=Math.max(1,cfg.orig||8192);
+  const betaFast=cfg.betaFast||32,betaSlow=cfg.betaSlow||1;
+  const start=Math.max(0,Math.floor(yarnCorrDim(d,nCtxOrig,betaFast,base)));
+  const end=Math.min(d-1,Math.ceil(yarnCorrDim(d,nCtxOrig,betaSlow,base)));
+  const extFactor=isYarn?(cfg.extFactor??1):0;
+  const mscale=llamaYarnAttnFactor(cfg);
+
+  const angleFor=(pair)=>{
+    const i0=pair*2;
+    const thetaExtrap=pos*Math.pow(base,-i0/d);
+    if(!isYarn)return thetaExtrap;
+    const interp=freqScale*thetaExtrap;
+    const y=(pair-start)/Math.max(.001,end-start);
+    const ramp=(1-Math.min(1,Math.max(0,y)))*extFactor;
+    return interp*(1-ramp)+thetaExtrap*ramp
+  };
+
+  if(mode===0){
+    // GGML_ROPE_TYPE_NORMAL: adjacent pairs (0,1), (2,3), ...
+    // GGUF converters can permute source-model Q/K weights to this ordering.
+    for(let i=0;i<d;i+=2){
+      const theta=angleFor(i>>1),c=Math.cos(theta)*mscale,s=Math.sin(theta)*mscale;
+      const x=a[i],y=a[i+1];
+      out[i]=x*c-y*s;
+      out[i+1]=y*c+x*s
+    }
+  }else{
+    // GGML_ROPE_TYPE_NEOX: half-split pairs.
+    for(let i=0;i<half;i++){
+      const theta=angleFor(i),c=Math.cos(theta)*mscale,s=Math.sin(theta)*mscale;
+      const x=a[i],y=a[i+half];
+      out[i]=x*c-y*s;
+      out[i+half]=y*c+x*s
+    }
+  }
+  return out
+}
+
+/* GGUF tokenizer: BPE when merges exist, otherwise greedy token matching. */
+function bytesUnicode(){
+ const bs=[];for(let i=33;i<=126;i++)bs.push(i);for(let i=161;i<=172;i++)bs.push(i);for(let i=174;i<=255;i++)bs.push(i);
+ const cs=bs.slice();let n=0;for(let b=0;b<256;b++)if(!bs.includes(b)){bs.push(b);cs.push(256+n++)}
+ const e=new Map(),d=new Map();for(let i=0;i<bs.length;i++){const ch=String.fromCodePoint(cs[i]);e.set(bs[i],ch);d.set(ch,bs[i])}return [e,d]
+}
+const [BENC,BDEC]=bytesUnicode();
+class Tok{
+  constructor(em){
+    this.tokens=em.meta['tokenizer.ggml.tokens'];
+    if(!Array.isArray(this.tokens))throw Error('GGUF tokenizer.ggml.tokens is required');
+    this.types=Array.isArray(em.meta['tokenizer.ggml.token_type'])?em.meta['tokenizer.ggml.token_type']:[];
+    this.scores=Array.isArray(em.meta['tokenizer.ggml.scores'])?em.meta['tokenizer.ggml.scores']:[];
+    this.map=new Map(this.tokens.map((x,i)=>[x,i]));
+    this.merges=em.meta['tokenizer.ggml.merges']||[];
+    this.rank=new Map();
+    for(let i=0;i<this.merges.length;i++){const p=this.merges[i].split(' ');if(p.length>=2)this.rank.set(p[0]+'\0'+p[1],i)}
+    this.model=String(em.meta['tokenizer.ggml.model']||'').toLowerCase();
+    this.pre=String(em.meta['tokenizer.ggml.pre']||'').toLowerCase();
+    this.chatTemplate=String(em.meta['tokenizer.chat_template']||'');
+    this.bos=Number(em.meta['tokenizer.ggml.bos_token_id']??this.map.get('<s>')??1);
+    this.eos=Number(em.meta['tokenizer.ggml.eos_token_id']??this.map.get('</s>')??2);
+    this.unk=Number(em.meta['tokenizer.ggml.unknown_token_id']??this.map.get('<unk>')??0);
+    this.ignoreMerges=Boolean(em.meta['tokenizer.ggml.ignore_merges']??false);
+    this.addBos=Boolean(em.meta['tokenizer.ggml.add_bos_token']??true);
+    this.addEos=Boolean(em.meta['tokenizer.ggml.add_eos_token']??false);
+    this.addSpacePrefix=Boolean(em.meta['tokenizer.ggml.add_space_prefix']??false);
+    this.byteFallback=Boolean(em.meta['tokenizer.ggml.byte_fallback']??true);
+    this.tekken=this.pre.includes('tekken');
+    this.tekkenRe=/[^\r\n\p{L}\p{N}]?((?=[\p{L}])([^a-z]))*((?=[\p{L}])([^A-Z]))+|[^\r\n\p{L}\p{N}]?((?=[\p{L}])([^a-z]))+((?=[\p{L}])([^A-Z]))*|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n/]*|\s*[\r\n]+|\s+(?!\S)|\s+/gu;
+    this.specials=[];
+    for(let i=0;i<this.tokens.length;i++)if(Number(this.types[i])===3)this.specials.push({text:this.tokens[i],id:i});
+    this.specials.sort((a,b)=>b.text.length-a.text.length)
+  }
+  specialId(s){const id=this.map.get(s);return id==null?-1:id}
+  isControl(id){return this.types.length>id?Number(this.types[id])===3:false}
+  defaultSystemMessage(){
+    const m=this.chatTemplate.match(/set\s+default_system_message\s*=\s*'((?:\\.|[^'])*)'/);
+    if(m)return m[1].replace(/\\n/g,'\n').replace(/\\'/g,"'").replace(/\\\\/g,'\\');
+    return '# HOW YOU SHOULD THINK AND ANSWER\n\nThink carefully in [THINK] and [/THINK], then provide a clear self-contained final answer.'
+  }
+  bpe(s){
+    if(this.ignoreMerges&&this.map.has(s))return [s];
+    let w=[...s];
+    while(w.length>1){let bi=-1,br=1e18;for(let i=0;i<w.length-1;i++){const r=this.rank.get(w[i]+'\0'+w[i+1]);if(r!=null&&r<br){br=r;bi=i}}if(bi<0)break;w.splice(bi,2,w[bi]+w[bi+1])}
+    return w
+  }
+  encodeBPEPiece(piece){
+    const bytes=te.encode(piece);let mapped='';for(const b of bytes)mapped+=BENC.get(b);
+    if(this.ignoreMerges&&this.map.has(mapped))return [this.map.get(mapped)];
+    const ids=[];
+    for(const p of this.bpe(mapped)){
+      if(this.map.has(p))ids.push(this.map.get(p));
+      else for(const c of [...p]){const id=this.map.get(c);if(id==null)throw Error('Tokenizer cannot encode byte piece '+JSON.stringify(c));ids.push(id)}
+    }
+    return ids
+  }
+  splitTekken(text){this.tekkenRe.lastIndex=0;const parts=text.match(this.tekkenRe)||[];return parts.join('')===text?parts:[text]}
+  encodeSentencePieceBPE(text){
+    // Foundry Application 9/11 trains SentencePiece BPE with nmt_nfkc,
+    // byte_fallback, and the normal dummy-space prefix. Reconstruct the same
+    // merge rule from GGUF token scores so Foundry Llama prompts are encoded
+    // according to the tokenizer that actually trained the model.
+    let norm=String(text||'').normalize('NFKC').replace(/\s+/gu,' ').trim();
+    if(!norm)return [];
+    const surface='▁'+norm.replaceAll(' ','▁'),pieces=[];
+    for(const ch of [...surface]){
+      if(this.map.has(ch)){pieces.push(ch);continue}
+      if(!this.byteFallback)throw Error('SentencePiece tokenizer cannot encode '+JSON.stringify(ch));
+      for(const b of te.encode(ch)){
+        const bp='<0x'+b.toString(16).toUpperCase().padStart(2,'0')+'>';
+        if(!this.map.has(bp))throw Error('SentencePiece byte fallback token is missing: '+bp);
+        pieces.push(bp)
+      }
+    }
+    while(pieces.length>1){
+      let best=-1,bestScore=-Infinity;
+      for(let i=0;i<pieces.length-1;i++){
+        const merged=pieces[i]+pieces[i+1],id=this.map.get(merged);
+        if(id==null)continue;
+        const type=this.types.length>id?Number(this.types[id]):1;
+        if(type===3||type===5)continue;
+        const score=Number(this.scores[id]??-Infinity);
+        if(score>bestScore){bestScore=score;best=i}
+      }
+      if(best<0)break;
+      pieces.splice(best,2,pieces[best]+pieces[best+1])
+    }
+    return pieces.map(piece=>this.map.get(piece))
+  }
+  encodeText(text){
+    if(this.model==='llama'&&this.scores.length)return this.encodeSentencePieceBPE(text);
+    if(this.addSpacePrefix&&text&& !/^\s/.test(text))text=' '+text;
+    if(this.merges.length||this.model==='gpt2'||this.tekken){const ids=[];const parts=this.tekken?this.splitTekken(text):[text];for(const part of parts)ids.push(...this.encodeBPEPiece(part));return ids}
+    const ids=[],s='▁'+text.replaceAll(' ','▁');let i=0;
+    while(i<s.length){let best=null,bid=-1;for(let j=Math.min(s.length,i+64);j>i;j--){const p=s.slice(i,j);if(this.map.has(p)){best=p;bid=this.map.get(p);break}}if(best==null){const c=s[i];bid=this.map.get(c);if(bid==null)throw Error('Tokenizer cannot encode '+JSON.stringify(c));best=c}ids.push(bid);i+=best.length}
+    return ids
+  }
+  encodeSpecialAware(text){
+    const ids=[];let pos=0;
+    while(pos<text.length){let bestPos=-1,best=null;for(const sp of this.specials){const at=text.indexOf(sp.text,pos);if(at>=0&&(bestPos<0||at<bestPos||(at===bestPos&&sp.text.length>best.text.length))){bestPos=at;best=sp}}
+      if(bestPos<0){ids.push(...this.encodeText(text.slice(pos)));break}
+      if(bestPos>pos)ids.push(...this.encodeText(text.slice(pos,bestPos)));ids.push(best.id);pos=bestPos+best.text.length}
+    return ids
+  }
+  encode(text,bos=true){const ids=bos&&this.addBos&&this.bos>=0?[this.bos]:[];ids.push(...this.encodeText(text));if(this.addEos&&this.eos>=0)ids.push(this.eos);return ids}
+  control(s){const id=this.specialId(s);if(id<0)throw Error('Model tokenizer is missing required control token '+s);return id}
+  bytesFor(id){
+    if(id===this.eos||id===this.bos||this.isControl(id))return new Uint8Array();
+    const t=this.tokens[id]||'';
+    const byte=t.match(/^<0x([0-9A-Fa-f]{2})>$/);if(byte)return Uint8Array.from([parseInt(byte[1],16)]);
+    if(this.merges.length||this.model==='gpt2'||this.tekken){const b=[];for(const c of [...t]){if(BDEC.has(c))b.push(BDEC.get(c));else b.push(...te.encode(c))}return Uint8Array.from(b)}
+    return te.encode(t.replaceAll('▁',' '))
+  }
+  decode(id){return new TextDecoder().decode(this.bytesFor(id))}
+  makeStreamDecoder(){return new TextDecoder('utf-8',{fatal:false})}
+  selfTestLlama(){
+    const tests=['Hello','How are you?','Foundry model test','Café 123'],rows=[];
+    for(const text of tests){
+      const ids=this.encodeText(text);if(!ids.length||ids.includes(this.unk))throw Error('SentencePiece tokenizer produced UNK for '+JSON.stringify(text));
+      const parts=ids.map(id=>this.bytesFor(id)),n=parts.reduce((a,b)=>a+b.length,0),all=new Uint8Array(n);let o=0;
+      for(const part of parts){all.set(part,o);o+=part.length}
+      const decoded=new TextDecoder().decode(all).trimStart();
+      if(decoded!==text.normalize('NFKC'))throw Error('SentencePiece tokenizer round-trip mismatch: '+JSON.stringify(text)+' -> '+JSON.stringify(decoded));
+      rows.push({text,ids:ids.slice(0,16)})
+    }
+    return {ok:true,pre:this.pre,model:this.model,rows,addBos:this.addBos,addEos:this.addEos,byteFallback:this.byteFallback}
+  }
+  selfTest(){
+    const required=['[INST]','[/INST]','[SYSTEM_PROMPT]','[/SYSTEM_PROMPT]','[THINK]','[/THINK]'];
+    const missing=required.filter(x=>this.specialId(x)<0);if(missing.length)throw Error('Tokenizer is missing required Mistral3 control tokens: '+missing.join(', '));
+    const tests=['Hello','How are you?',"I'm a Military AVN Tech",'Café — 123'],rows=[];
+    for(const text of tests){const ids=this.encodeText(text);if(!ids.length||ids.includes(this.unk))throw Error('Tokenizer produced UNK for '+JSON.stringify(text));const parts=ids.map(id=>this.bytesFor(id));const n=parts.reduce((a,b)=>a+b.length,0),all=new Uint8Array(n);let o=0;for(const p of parts){all.set(p,o);o+=p.length}const decoded=new TextDecoder().decode(all);if(decoded!==text)throw Error('Tokenizer round-trip mismatch: '+JSON.stringify(text)+' -> '+JSON.stringify(decoded));rows.push({text,ids:ids.slice(0,16)})}
+    return {
+      ok:true,pre:this.pre,model:this.model,rows,
+      systemChars:this.defaultSystemMessage().length,
+      ignoreMerges:this.ignoreMerges,addBos:this.addBos,addEos:this.addEos,
+      addSpacePrefix:this.addSpacePrefix,byteFallback:this.byteFallback
+    }
+  }
+}
+
+class MistralEngine{
+  constructor(r,em,plan){this.r=r;this.em=em;this.plan=plan;this.ops=new TensorOps(r,em);this.tok=new Tok(em);this.layers=[]}
+  async init(){
+    const a=String(this.em.meta['general.architecture']||'mistral').toLowerCase();
+    this.dim=Number(mget(this.em,a,'embedding_length'));this.nl=Number(mget(this.em,a,'block_count'));this.nh=Number(mget(this.em,a,'attention.head_count'));this.nkv=Number(mget(this.em,a,'attention.head_count_kv',this.nh));this.ff=Number(mget(this.em,a,'feed_forward_length'));
+    if(!this.dim||!this.nl||!this.nh)throw Error('Mistral metadata missing embedding_length/block_count/head_count');
+    this.hd=Number(mget(this.em,a,'attention.key_length',this.dim/this.nh));
+    this.eps=Number(mget(this.em,a,'attention.layer_norm_rms_epsilon',1e-5));
+    this.theta=Number(mget(this.em,a,'rope.freq_base',1000000000));
+    this.ropeCfg={
+      base:this.theta,
+      type:String(mget(this.em,a,'rope.scaling.type','none')),
+      factor:Number(mget(this.em,a,'rope.scaling.factor',1)),
+      orig:Number(mget(this.em,a,'rope.scaling.original_context_length',16384)),
+      betaFast:Number(mget(this.em,a,'rope.scaling.yarn_beta_fast',32)),
+      betaSlow:Number(mget(this.em,a,'rope.scaling.yarn_beta_slow',1)),
+      extFactor:Number(mget(this.em,a,'rope.scaling.yarn_ext_factor',1)),
+      attnFactor:Number(mget(this.em,a,'rope.scaling.yarn_attn_factor',1)),
+      ropeAttnFactor:Number(mget(this.em,a,'rope.scaling.attn_factor',1)),
+      logMul:Number(mget(this.em,a,'rope.scaling.yarn_log_multiplier',0))
+    };
+    this.ropeCfg.finalAttnFactor=llamaYarnAttnFactor(this.ropeCfg);
+    this.attnScale=1/Math.sqrt(this.hd);
+    this.llama4Beta=Number(mget(this.em,a,'attention.temperature_scale',a==='llama'?0.0:0.1));
+    this.llama4Orig=this.ropeCfg.orig;
+    // llama.cpp Mistral/Mistral3 GGUFs use GGML_ROPE_TYPE_NORMAL (0).
+    this.ropeMode=(a.includes('mistral')||a.includes('ministral')||a==='llama')?0:2;
+    this.emb=pickTensor(this.em,['token_embd.weight']);this.norm=pickTensor(this.em,['output_norm.weight']);this.out=pickTensor(this.em,['output.weight'],false)||this.emb;
+    this.vocabSize=this.tok.tokens.length;
+    if(Number(this.emb.dims[0])!==this.dim||Number(this.emb.dims[1])!==this.vocabSize){
+      throw Error('Embedding tensor shape '+JSON.stringify(this.emb.dims)+' does not match hidden/vocab '+this.dim+'×'+this.vocabSize)
+    }
+    if(Number(this.out.dims[0])!==this.dim||Number(this.out.dims[1])!==this.vocabSize){
+      throw Error('Output tensor shape '+JSON.stringify(this.out.dims)+' does not match hidden/vocab '+this.dim+'×'+this.vocabSize)
+    }
+    for(let i=0;i<this.nl;i++)this.layers.push({
+      q:pickTensor(this.em,[`blk.${i}.attn_q.weight`]),k:pickTensor(this.em,[`blk.${i}.attn_k.weight`]),v:pickTensor(this.em,[`blk.${i}.attn_v.weight`]),
+      o:pickTensor(this.em,[`blk.${i}.attn_output.weight`,`blk.${i}.attn_out.weight`]),
+      an:pickTensor(this.em,[`blk.${i}.attn_norm.weight`,`blk.${i}.ln1.weight`]),fn:pickTensor(this.em,[`blk.${i}.ffn_norm.weight`,`blk.${i}.ln2.weight`]),
+      g:pickTensor(this.em,[`blk.${i}.ffn_gate.weight`]),u:pickTensor(this.em,[`blk.${i}.ffn_up.weight`]),d:pickTensor(this.em,[`blk.${i}.ffn_down.weight`])
+    });
+    // Keep the quantized token-embedding table in system RAM after its one-time
+    // reconstruction. Compressed models then avoid re-inflating an NHSC1 block
+    // for every prompt/generated token.
+    this.ops.pinCPU([this.emb]);
+    const matrices=[this.emb,this.out];
+    for(const L of this.layers)matrices.push(L.q,L.k,L.v,L.o,L.g,L.u,L.d);
+    await this.ops.preload(matrices,msg=>setBadge(msg,true));
+    this.reset();return this
+  }
+  reset(){this.K=Array.from({length:this.nl},()=>[]);this.V=Array.from({length:this.nl},()=>[])}
+  async token(id,pos,status){
+    let x=await this.ops.row(this.emb,id);
+    for(let li=0;li<this.nl;li++){
+      status?.(`Token ${pos+1} · layer ${li+1}/${this.nl}`);
+      const L=this.layers[li],xn=rms(x,await this.ops.vector(L.an),this.eps);
+      const [qv,kv,vv]=await this.ops.matvecMany([L.q,L.k,L.v],xn);
+      const q=[],k=[],qscale=1+this.llama4Beta*Math.log(1+Math.floor(pos/this.llama4Orig));
+      for(let h=0;h<this.nh;h++){const qr=ropeGGMLYarn(qv.slice(h*this.hd,(h+1)*this.hd),pos,this.ropeCfg,this.ropeMode);for(let j=0;j<qr.length;j++)qr[j]*=qscale;q.push(qr)}
+      for(let h=0;h<this.nkv;h++)k.push(ropeGGMLYarn(kv.slice(h*this.hd,(h+1)*this.hd),pos,this.ropeCfg,this.ropeMode));
+      this.K[li].push(k);this.V[li].push(Array.from({length:this.nkv},(_,h)=>vv.slice(h*this.hd,(h+1)*this.hd)));
+      const att=new Float32Array(this.nh*this.hd),group=this.nh/this.nkv,scale=this.attnScale;
+      for(let h=0;h<this.nh;h++){const kh=Math.floor(h/group),scores=new Float32Array(this.K[li].length);for(let t=0;t<scores.length;t++){let s=0;for(let j=0;j<this.hd;j++)s+=this.K[li][t][kh][j]*q[h][j];scores[t]=s*scale}const p=softmax(scores);for(let j=0;j<this.hd;j++){let s=0;for(let t=0;t<p.length;t++)s+=p[t]*this.V[li][t][kh][j];att[h*this.hd+j]=s}}
+      x=add(x,await this.ops.matvec(L.o,att));
+      const fn=rms(x,await this.ops.vector(L.fn),this.eps),gu=await this.ops.matvecMany([L.g,L.u],fn),g=gu[0],u=gu[1],z=new Float32Array(g.length);for(let i=0;i<z.length;i++)z[i]=silu(g[i])*u[i];
+      x=add(x,await this.ops.matvec(L.d,z))
+    }
+    x=rms(x,await this.ops.vector(this.norm),this.eps);return await this.ops.matvec(this.out,x)
+  }
+  reset(){
+    this.K=Array.from({length:this.nl},()=>[]);
+    this.V=Array.from({length:this.nl},()=>[]);
+    this.pos=0;
+    this.sessionStarted=false
+  }
+  resetSession(){this.reset()}
+  async consume(ids,status){
+    let logits=null;
+    for(const id of ids){logits=await this.token(id,this.pos,status);this.pos++}
+    return logits
+  }
+  async startSession(status){
+    if(this.sessionStarted)return null;
+    this.reset();
+    const base=[this.tok.bos];
+    const sp0=this.tok.specialId('[SYSTEM_PROMPT]');
+    const sp1=this.tok.specialId('[/SYSTEM_PROMPT]');
+    if(sp0>=0&&sp1>=0){
+      base.push(sp0,...this.tok.encodeText('You are a helpful, accurate local assistant running in this browser. The application may provide a Persistent local memory section inside user turns. Treat those remembered facts as information the user previously gave you, use them when relevant, accept user corrections, avoid needless repetition, and do not invent memories.'),sp1)
+    }
+    this.sessionStarted=true;
+    return await this.consume(base,status)
+  }
+  async generate(text,hist,maxNew,temp,topK,onToken,status){
+    await this.startSession(status);
+    const inst0=this.tok.control('[INST]'),inst1=this.tok.control('[/INST]');
+    let logits=await this.consume([inst0,...this.tok.encodeText(text),inst1],status);
+
+    let out='',generated=0;
+    const decoder=this.tok.makeStreamDecoder();
+    for(let n=0;n<maxNew;n++){
+      let id;
+      if(temp<=0){
+        let m=-Infinity;id=0;
+        for(let i=0;i<logits.length;i++)if(logits[i]>m){m=logits[i];id=i}
+      }else id=sampleLogits(logits,temp,topK);
+
+      if(id===this.tok.eos){
+        // EOS is part of the official chat sequence; put it into KV cache so
+        // the next user message continues rather than re-prefilling history.
+        await this.consume([id],status);
+        const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}
+        return out
+      }
+
+      const bytes=this.tok.bytesFor(id);
+      const piece=bytes.length?decoder.decode(bytes,{stream:true}):'';
+      if(piece){out+=piece;onToken(piece)}
+      generated++;
+      logits=await this.consume([id],status)
+    }
+
+    // Close a capped response with EOS so a subsequent turn remains valid.
+    if(this.tok.eos>=0)await this.consume([this.tok.eos],status);
+    const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}
+    return out
+  }
+}
+function sampleLogits(logits,temp,k){const a=Array.from(logits,(v,i)=>[v,i]).sort((x,y)=>y[0]-x[0]).slice(0,Math.min(k,logits.length));const m=a[0][0],w=a.map(x=>Math.exp((x[0]-m)/temp));let s=w.reduce((a,b)=>a+b,0),r=Math.random()*s;for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return a[i][1]}return a[0][1]}
+
+
+/* ========================================================================
+   FINAL MISTRAL GPU-RESIDENT EXECUTION GRAPH
+
+   CPU responsibilities:
+     - GGUF/NHSC1 byte source
+     - tokenizer
+     - one embedding-row fetch for each known/generated token
+     - one 4-byte sampled-token readback per generated token
+
+   GPU responsibilities:
+     - all 40 transformer layers
+     - RMSNorm
+     - Q/K/V quantized projections
+     - NeoX/YaRN RoPE
+     - GPU-resident K/V cache
+     - causal grouped-query attention
+     - output projection + residual
+     - FFN norm + gate/up + SwiGLU + down + residual
+     - final norm + logits
+     - greedy argmax sampling
+
+   No intermediate activation or KV buffer is mapped back into JavaScript.
+   ======================================================================== */
+
+function gpuContextLimit(){
+ const e=$('gpuContext');
+ return Math.max(1024,Number(e?e.value:4096)||4096)
+}
+function gpuBuf(device,size,usage,label=''){
+ const aligned=Math.max(4,Math.ceil(Number(size)/256)*256);
+ return device.createBuffer({size:aligned,usage,label})
+}
+function f32Bits(x){
+ const a=new ArrayBuffer(4),v=new DataView(a);v.setFloat32(0,x,true);return v.getUint32(0,true)
+}
+
+class FinalMistralGraph{
+ constructor(engine){
+  this.e=engine;this.d=gpu.device;this.q=engine.ops.qgpu;
+  this.U=GPUBufferUsage;this.ctx=gpuContextLimit();
+  this.pipes={};this.layerGPU=[];this.vectorGPU=new Map();
+  this.lastProfile={submitMs:0,readbackMs:0};
+ }
+ async init(){
+  if(!gpu.available||!this.q)throw Error('Final GPU graph requires WebGPU');
+  await this.q.init();
+
+  // Compile the full shader suite first, while GPU memory pressure is low.
+  await this.makePipelines();
+  if(!gpu.available)throw Error('WebGPU device was lost while creating compute pipelines');
+
+  // Only allocate KV cache and large scratch buffers after all shaders compile.
+  this.allocScratch();
+  if(!gpu.available)throw Error('WebGPU device was lost while allocating KV/scratch buffers');
+
+  await this.uploadVectors();
+  if(!gpu.available)throw Error('WebGPU device was lost while uploading normalization vectors');
+
+  this.buildMatOps();
+  this.makeLayerBindings();
+  if(!gpu.available)throw Error('WebGPU device was lost while creating model bind groups');
+  return this
+ }
+ allocScratch(){
+  const e=this.e,U=this.U,d=this.d;
+  if(!gpu.available||gpu.device!==d)throw Error('WebGPU device is not valid before graph allocation');
+  const kvElemsEstimate=this.ctx*e.nkv*e.hd;
+  const kvTotalPacked=Math.ceil(kvElemsEstimate/2)*4*2*e.nl;
+  const scratchEstimate=(e.dim*8+e.ff*12+e.nh*this.ctx*4+Number(e.out.dims[1])*4);
+  const projected=AMD_PROFILE.residentBytes+kvTotalPacked+scratchEstimate;
+  const budget=currentVRAMBudget();
+  if(projected>budget){
+   throw Error('Projected GPU residency '+fmtBytes(projected)+' exceeds configured '+fmtBytes(budget)+' budget. Reduce GPU KV context or raise VRAM budget.')
+  }
+  this.x=gpuBuf(d,e.dim*4,U.STORAGE|U.COPY_DST|U.COPY_SRC,'x');
+  this.norm=gpuBuf(d,e.dim*4,U.STORAGE,'norm');
+  this.qv=gpuBuf(d,e.nh*e.hd*4,U.STORAGE,'q');
+  this.kv=gpuBuf(d,e.nkv*e.hd*4,U.STORAGE,'k');
+  this.vv=gpuBuf(d,e.nkv*e.hd*4,U.STORAGE,'v');
+  this.qrot=gpuBuf(d,e.nh*e.hd*4,U.STORAGE,'qrot');
+  this.att=gpuBuf(d,e.nh*e.hd*4,U.STORAGE,'attention');
+  this.tmp=gpuBuf(d,Math.max(e.dim,e.ff)*4,U.STORAGE,'tmp');
+  this.gate=gpuBuf(d,e.ff*4,U.STORAGE,'gate');
+  this.up=gpuBuf(d,e.ff*4,U.STORAGE,'up');
+  this.ff=gpuBuf(d,e.ff*4,U.STORAGE,'ff');
+  this.logits=gpuBuf(d,Number(e.out.dims[1])*4,U.STORAGE|U.COPY_SRC,'logits');
+  this.logitsRead=gpuBuf(d,Number(e.out.dims[1])*4,U.COPY_DST|U.MAP_READ,'logitsRead');
+  this.scores=gpuBuf(d,e.nh*this.ctx*4,U.STORAGE,'scores');
+  this.tokenOut=gpuBuf(d,4,U.STORAGE|U.COPY_SRC,'tokenOut');
+  this.tokenRead=gpuBuf(d,4,U.COPY_DST|U.MAP_READ,'tokenRead');
+
+  this.ropeParam=gpuBuf(d,64,U.UNIFORM|U.COPY_DST,'ropeParam');
+  this.attParam=gpuBuf(d,64,U.UNIFORM|U.COPY_DST,'attParam');
+  this.normParam=gpuBuf(d,16,U.UNIFORM|U.COPY_DST,'normParam');
+  this.vecDimParam=gpuBuf(d,16,U.UNIFORM|U.COPY_DST,'vecDimParam');
+  this.ffParam=gpuBuf(d,16,U.UNIFORM|U.COPY_DST,'ffParam');
+  this.argmaxParam=gpuBuf(d,16,U.UNIFORM|U.COPY_DST,'argmaxParam');
+  // Static validity mask for GPU hidden-reasoning argmax. Normal vocabulary
+  // tokens are allowed; unrelated control markers, UNK and BOS are excluded.
+  const avocab=Number(e.out.dims[1]),amask=new Uint32Array(avocab);amask.fill(1);
+  if(avocab>0)amask[0]=0;
+  if(e.tok&&e.tok.bos>=0&&e.tok.bos<avocab)amask[e.tok.bos]=0;
+  if(e.tok&&e.tok.types){for(let i=0;i<Math.min(e.tok.types.length,avocab);i++)if(Number(e.tok.types[i])===3)amask[i]=0}
+  const aeos=e.tok?e.tok.eos:-1,aend=e.tok?e.tok.specialId('[/THINK]'):-1;
+  if(aeos>=0&&aeos<avocab)amask[aeos]=1;if(aend>=0&&aend<avocab)amask[aend]=1;
+  this.argmaxMask=gpuBuf(d,avocab*4,U.STORAGE|U.COPY_DST,'argmaxMask');
+  d.queue.writeBuffer(this.argmaxMask,0,amask);
+
+  // One K/V pair per layer avoids the 2 GiB single-buffer limit.
+  const kvElems=this.ctx*e.nkv*e.hd;
+  const kvPackedBytes=Math.ceil(kvElems/2)*4;
+  this.kvBytesPerLayerPair=kvPackedBytes*2;
+  for(let i=0;i<e.nl;i++){
+   this.layerGPU.push({
+    K:gpuBuf(d,kvPackedBytes,U.STORAGE|U.COPY_DST,`K16_${i}`),
+    V:gpuBuf(d,kvPackedBytes,U.STORAGE|U.COPY_DST,`V16_${i}`)
+   })
+  }
+ }
+ async makePipelines(){
+  const d=this.d;
+  const common=`
+fn sigmoid(x:f32)->f32{return 1.0/(1.0+exp(-x));}
+`;
+  const rms=common+`
+struct P {
+ n: u32,
+ eps: f32,
+ _a: u32,
+ _b: u32,
+}
+@group(0) @binding(0) var<storage,read> X:array<f32>;
+@group(0) @binding(1) var<storage,read> W:array<f32>;
+@group(0) @binding(2) var<storage,read_write> Y:array<f32>;
+@group(0) @binding(3) var<uniform> p:P;
+var<workgroup> s:array<f32,256>;
+@compute @workgroup_size(256)
+fn main(@builtin(local_invocation_id) lid:vec3<u32>){
+ let l=lid.x;var v:f32=0.0;var i=l;
+ loop{if(i>=p.n){break;}v=v+X[i]*X[i];i=i+256u;}
+ s[l]=v;workgroupBarrier();
+ var st:u32=128u;loop{if(st==0u){break;}if(l<st){s[l]=s[l]+s[l+st];}workgroupBarrier();st=st>>1u;}
+ let inv=inverseSqrt(s[0]/f32(p.n)+p.eps);i=l;
+ loop{if(i>=p.n){break;}Y[i]=X[i]*inv*W[i];i=i+256u;}
+}`;
+  const residual=`
+struct P {
+ n: u32,
+ _a: u32,
+ _b: u32,
+ _c: u32,
+}
+@group(0) @binding(0) var<storage,read_write> X:array<f32>;
+@group(0) @binding(1) var<storage,read> A:array<f32>;
+@group(0) @binding(2) var<uniform> p:P;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id:vec3<u32>){let i=id.x;if(i<p.n){X[i]=X[i]+A[i];}}
+`;
+  const swiglu=common+`
+struct P {
+ n: u32,
+ _a: u32,
+ _b: u32,
+ _c: u32,
+}
+@group(0) @binding(0) var<storage,read> G:array<f32>;
+@group(0) @binding(1) var<storage,read> U:array<f32>;
+@group(0) @binding(2) var<storage,read_write> O:array<f32>;
+@group(0) @binding(3) var<uniform> p:P;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id:vec3<u32>){let i=id.x;if(i<p.n){let x=G[i];O[i]=(x*sigmoid(x))*U[i];}}
+`;
+  const rope=`
+struct P {
+ pos: u32,
+ nq: u32,
+ nkv: u32,
+ hd: u32,
+ maxctx: u32,
+ yarn: u32,
+ rope_mode: u32,
+ _p1: u32,
+ base: f32,
+ factor: f32,
+ orig: f32,
+ beta_fast: f32,
+ beta_slow: f32,
+ ext_factor: f32,
+ attn_factor: f32,
+ llama_beta: f32,
+}
+@group(0) @binding(0) var<storage,read> Q:array<f32>;
+@group(0) @binding(1) var<storage,read> K:array<f32>;
+@group(0) @binding(2) var<storage,read> V:array<f32>;
+@group(0) @binding(3) var<storage,read_write> QR:array<f32>;
+@group(0) @binding(4) var<storage,read_write> KC:array<u32>;
+@group(0) @binding(5) var<storage,read_write> VC:array<u32>;
+@group(0) @binding(6) var<uniform> p:P;
+
+fn corr_dim(nDims:f32,nCtx:f32,nRot:f32,base:f32)->f32{
+ return nDims*log(nCtx/(nRot*2.0*3.141592653589793))/(2.0*log(base));
+}
+fn angle_for(pair:u32)->f32{
+ let ii=f32(pair*2u);
+ let ext=f32(p.pos)*pow(p.base,-ii/f32(p.hd));
+ if(p.yarn==0u||p.factor<=1.0){return ext;}
+ let fs=1.0/p.factor;
+ let interp=fs*ext;
+ let st=max(0.0,floor(corr_dim(f32(p.hd),p.orig,p.beta_fast,p.base)));
+ let en=min(f32(p.hd-1u),ceil(corr_dim(f32(p.hd),p.orig,p.beta_slow,p.base)));
+ let yy=(f32(pair)-st)/max(0.001,en-st);
+ let ramp=(1.0-clamp(yy,0.0,1.0))*p.ext_factor;
+ return interp*(1.0-ramp)+ext*ramp;
+}
+fn mscale()->f32{
+ return p.attn_factor;
+}
+fn query_scale()->f32{
+ return 1.0+p.llama_beta*log(1.0+floor(f32(p.pos)/max(1.0,p.orig)));
+}
+fn rot_k(idx:u32)->f32{
+ let h=idx/p.hd;
+ let d=idx%p.hd;
+ let h2=p.hd/2u;
+ var pair:u32;
+ var other:u32;
+ var second:bool;
+ if(p.rope_mode==0u){
+  pair=d>>1u;
+  other=h*p.hd+(d^1u);
+  second=(d&1u)==1u;
+ }else{
+  pair=select(d,d-h2,d>=h2);
+  other=select(h*p.hd+d+h2,h*p.hd+d-h2,d>=h2);
+  second=d>=h2;
+ }
+ let a=angle_for(pair);
+ let c=cos(a)*mscale();let s=sin(a)*mscale();
+ let x=K[idx];let y=K[other];
+ return select(x*c-y*s,x*c+y*s,second);
+}
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id:vec3<u32>){
+ let i=id.x;
+ let qn=p.nq*p.hd;
+ let kn=p.nkv*p.hd;
+ let h2=p.hd/2u;
+
+ // Q remains FP32 scratch.
+ if(i<qn){
+  let d=i%p.hd;let h=i/p.hd;
+  var pair:u32;var other:u32;var second:bool;
+  if(p.rope_mode==0u){
+   pair=d>>1u;other=h*p.hd+(d^1u);second=(d&1u)==1u;
+  }else{
+   pair=select(d,d-h2,d>=h2);
+   other=select(h*p.hd+d+h2,h*p.hd+d-h2,d>=h2);
+   second=d>=h2;
+  }
+  let a=angle_for(pair);let c=cos(a)*mscale();let s=sin(a)*mscale();
+  let x=Q[i];let y=Q[other];
+  QR[i]=select(x*c-y*s,x*c+y*s,second)*query_scale();
+ }
+
+ // K and V are packed two FP16 values per u32.
+ let pairs=(kn+1u)/2u;
+ if(i<pairs){
+  let i0=i*2u;
+  let i1=min(i0+1u,kn-1u);
+  let k0=rot_k(i0);
+  let k1=rot_k(i1);
+  let v0=V[i0];
+  let v1=V[i1];
+  let base=p.pos*pairs+i;
+  KC[base]=pack2x16float(vec2<f32>(k0,k1));
+  VC[base]=pack2x16float(vec2<f32>(v0,v1));
+ }
+}`;
+
+  const score=`
+struct P {
+ pos: u32,
+ nh: u32,
+ nkv: u32,
+ hd: u32,
+ maxctx: u32,
+ group: u32,
+ _a: u32,
+ _b: u32,
+ scale: f32,
+ _c: f32,
+ _d: f32,
+ _e: f32,
+}
+@group(0) @binding(0) var<storage,read> Q:array<f32>;
+@group(0) @binding(1) var<storage,read> K:array<u32>;
+@group(0) @binding(2) var<storage,read_write> S:array<f32>;
+@group(0) @binding(3) var<uniform> p:P;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id:vec3<u32>){
+ let ctx=p.pos+1u;let z=id.x;if(z>=p.nh*ctx){return;}
+ let h=z/ctx;let t=z-h*ctx;let kh=h/p.group;var sum:f32=0.0;
+ let qo=h*p.hd;let ko=t*(p.nkv*p.hd)+kh*p.hd;
+ for(var dd:u32=0u;dd<p.hd;dd=dd+1u){
+  let ix=ko+dd;let pk=unpack2x16float(K[ix>>1u]);
+  let kval=select(pk.x,pk.y,(ix&1u)==1u);
+  sum=sum+Q[qo+dd]*kval;
+ }
+ S[h*p.maxctx+t]=sum*p.scale;
+}`;
+  const softmax=`
+struct P {
+ pos: u32,
+ nh: u32,
+ nkv: u32,
+ hd: u32,
+ maxctx: u32,
+ group: u32,
+ _a: u32,
+ _b: u32,
+ scale: f32,
+ _c: f32,
+ _d: f32,
+ _e: f32,
+}
+@group(0) @binding(0) var<storage,read_write> S:array<f32>;
+@group(0) @binding(1) var<uniform> p:P;
+var<workgroup> mx:array<f32,256>;
+var<workgroup> sm:array<f32,256>;
+@compute @workgroup_size(256)
+fn main(@builtin(workgroup_id) wg:vec3<u32>,@builtin(local_invocation_id) lid:vec3<u32>){
+ let h=wg.x;if(h>=p.nh){return;}let l=lid.x;let ctx=p.pos+1u;var m:f32=-3.402823466e38;var t=l;
+ loop{if(t>=ctx){break;}m=max(m,S[h*p.maxctx+t]);t=t+256u;}mx[l]=m;workgroupBarrier();
+ var st:u32=128u;loop{if(st==0u){break;}if(l<st){mx[l]=max(mx[l],mx[l+st]);}workgroupBarrier();st=st>>1u;}
+ let M=mx[0];var local:f32=0.0;t=l;
+ loop{if(t>=ctx){break;}let e=exp(S[h*p.maxctx+t]-M);S[h*p.maxctx+t]=e;local=local+e;t=t+256u;}
+ sm[l]=local;workgroupBarrier();st=128u;
+ loop{if(st==0u){break;}if(l<st){sm[l]=sm[l]+sm[l+st];}workgroupBarrier();st=st>>1u;}
+ let inv=1.0/max(sm[0],1e-20);t=l;
+ loop{if(t>=ctx){break;}S[h*p.maxctx+t]=S[h*p.maxctx+t]*inv;t=t+256u;}
+}`;
+  const attout=`
+struct P {
+ pos: u32,
+ nh: u32,
+ nkv: u32,
+ hd: u32,
+ maxctx: u32,
+ group: u32,
+ _a: u32,
+ _b: u32,
+ scale: f32,
+ _c: f32,
+ _d: f32,
+ _e: f32,
+}
+@group(0) @binding(0) var<storage,read> S:array<f32>;
+@group(0) @binding(1) var<storage,read> V:array<u32>;
+@group(0) @binding(2) var<storage,read_write> O:array<f32>;
+@group(0) @binding(3) var<uniform> p:P;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) id:vec3<u32>){
+ let z=id.x;if(z>=p.nh*p.hd){return;}let h=z/p.hd;let d=z%p.hd;let kh=h/p.group;let ctx=p.pos+1u;
+ var sum:f32=0.0;
+ for(var t:u32=0u;t<ctx;t=t+1u){
+  let ix=t*(p.nkv*p.hd)+kh*p.hd+d;
+  let pv=unpack2x16float(V[ix>>1u]);
+  let vv=select(pv.x,pv.y,(ix&1u)==1u);
+  sum=sum+S[h*p.maxctx+t]*vv;
+ }
+ O[z]=sum;
+}`;
+  const argmax=`
+struct P {
+ n: u32,
+ _a: u32,
+ _b: u32,
+ _c: u32,
+}
+@group(0) @binding(0) var<storage,read> X:array<f32>;
+@group(0) @binding(1) var<storage,read_write> O:array<u32>;
+@group(0) @binding(2) var<uniform> p:P;
+@group(0) @binding(3) var<storage,read> M:array<u32>;
+var<workgroup> val:array<f32,256>;
+var<workgroup> ix:array<u32,256>;
+@compute @workgroup_size(256)
+fn main(@builtin(local_invocation_id) lid:vec3<u32>){
+ let l=lid.x;var best:f32=-3.402823466e38;var bi:u32=0u;var i=l;
+ loop{if(i>=p.n){break;}if(M[i]!=0u){let v=X[i];if(v>best){best=v;bi=i;}}i=i+256u;}
+ val[l]=best;ix[l]=bi;workgroupBarrier();
+ var st:u32=128u;loop{if(st==0u){break;}if(l<st&&val[l+st]>val[l]){val[l]=val[l+st];ix[l]=ix[l+st];}workgroupBarrier();st=st>>1u;}
+ if(l==0u){O[0]=ix[0];}
+}`;
+  const mk=async(name,code)=>{
+   const pm=code.match(/struct\s+P\s*\{([\s\S]*?)\}/);
+   if(pm){
+    const declared=new Set([...pm[1].matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*:/g)].map(x=>x[1]));
+    const used=new Set([...code.matchAll(/\bp\.([A-Za-z_][A-Za-z0-9_]*)/g)].map(x=>x[1]));
+    const missing=[...used].filter(x=>!declared.has(x));
+    if(missing.length)throw Error('WGSL '+name+' parameter mismatch: undeclared p.'+missing.join(', p.'))
+   }
+   const module=d.createShaderModule({label:'NEXUS '+name+' shader',code});
+   const pipelinePromise=d.createComputePipelineAsync({label:'NEXUS '+name+' pipeline',layout:'auto',compute:{module,entryPoint:'main'}});
+   const lostPromise=d.lost.then(info=>{throw Error('GPU device lost while compiling '+name+': '+String(info.reason||'unknown')+(info.message?' · '+info.message:''))});
+   try{return await Promise.race([pipelinePromise,lostPromise])}
+   catch(e){throw Error('WGSL '+name+' pipeline failed: '+String(e&&e.message||e))}
+  };
+
+  setBadge('Compiling GPU shader 1/8 · RMSNorm',true);
+  this.pipes.rms=await mk('RMSNorm',rms);
+  setBadge('Compiling GPU shader 2/8 · Residual',true);
+  this.pipes.residual=await mk('Residual',residual);
+  setBadge('Compiling GPU shader 3/8 · SwiGLU',true);
+  this.pipes.swiglu=await mk('SwiGLU',swiglu);
+  setBadge('Compiling GPU shader 4/8 · RoPE/KV',true);
+  this.pipes.rope=await mk('RoPE_KV_Pack',rope);
+  setBadge('Compiling GPU shader 5/8 · Attention score',true);
+  this.pipes.score=await mk('AttentionScore',score);
+  setBadge('Compiling GPU shader 6/8 · Softmax',true);
+  this.pipes.softmax=await mk('Softmax',softmax);
+  setBadge('Compiling GPU shader 7/8 · Attention output',true);
+  this.pipes.attout=await mk('AttentionOutput',attout);
+  setBadge('Compiling GPU shader 8/8 · Argmax',true);
+  this.pipes.argmax=await mk('Argmax',argmax);
+ }
+ async uploadVector(t){
+  if(this.vectorGPU.has(t.name))return this.vectorGPU.get(t.name);
+  const a=await this.e.ops.vector(t);
+  const b=this.q.makeBuffer(a,this.U.STORAGE|this.U.COPY_DST);
+  this.vectorGPU.set(t.name,b);return b
+ }
+ async uploadVectors(){
+  this.finalNormGPU=await this.uploadVector(this.e.norm);
+  for(const L of this.e.layers){
+   L._anGPU=await this.uploadVector(L.an);
+   L._fnGPU=await this.uploadVector(L.fn)
+  }
+ }
+ makeMatOp(t,input,output){
+  const rec=this.q.resident.get(t.name);
+  if(!rec)throw Error('Final GPU runtime requires resident weight tensor '+t.name);
+  const dispatches=[];
+  for(const ch of rec.chunks){
+   for(const seg of ch.segments){
+    dispatches.push({
+     rows:seg.rows,
+     rowStart:seg.rowStart,
+     bind:this.d.createBindGroup({
+      layout:this.q.pipeline.getBindGroupLayout(0),
+      entries:[
+       {binding:0,resource:{buffer:ch.weight}},
+       {binding:1,resource:{buffer:input}},
+       {binding:2,resource:{buffer:output}},
+       {binding:3,resource:{buffer:seg.param}}
+      ]
+     })
+    })
+   }
+  }
+  return {t,rec,input,output,dispatches}
+ }
+ buildMatOps(){
+  for(const L of this.e.layers){
+   L._qop=this.makeMatOp(L.q,this.norm,this.qv);
+   L._kop=this.makeMatOp(L.k,this.norm,this.kv);
+   L._vop=this.makeMatOp(L.v,this.norm,this.vv);
+   L._oop=this.makeMatOp(L.o,this.att,this.tmp);
+   L._gop=this.makeMatOp(L.g,this.norm,this.gate);
+   L._uop=this.makeMatOp(L.u,this.norm,this.up);
+   L._dop=this.makeMatOp(L.d,this.ff,this.tmp)
+  }
+  this.outOp=this.makeMatOp(this.e.out,this.norm,this.logits)
+ }
+ encodeMat(enc,op){
+  const pass=enc.beginComputePass();pass.setPipeline(this.q.pipeline);
+  for(const d of op.dispatches){pass.setBindGroup(0,d.bind);pass.dispatchWorkgroups(d.rows)}
+  pass.end()
+ }
+ encodeMats(enc,ops){
+  // Independent projections sharing the same quantized matvec pipeline can be
+  // dispatched in one compute pass. Q/K/V share the same normalized input, as
+  // do gate/up, so this removes 120 compute-pass boundaries per 40-layer token
+  // without changing any arithmetic or dependency ordering.
+  const pass=enc.beginComputePass();pass.setPipeline(this.q.pipeline);
+  for(const op of ops)for(const d of op.dispatches){pass.setBindGroup(0,d.bind);pass.dispatchWorkgroups(d.rows)}
+  pass.end()
+ }
+ makeLayerBindings(){
+  const d=this.d;
+  this.normFinalBG=d.createBindGroup({layout:this.pipes.rms.getBindGroupLayout(0),entries:[
+   {binding:0,resource:{buffer:this.x}},{binding:1,resource:{buffer:this.finalNormGPU}},
+   {binding:2,resource:{buffer:this.norm}},{binding:3,resource:{buffer:this.normParam}}
+  ]});
+  this.argmaxBG=d.createBindGroup({layout:this.pipes.argmax.getBindGroupLayout(0),entries:[
+   {binding:0,resource:{buffer:this.logits}},{binding:1,resource:{buffer:this.tokenOut}},{binding:2,resource:{buffer:this.argmaxParam}},
+   {binding:3,resource:{buffer:this.argmaxMask}}
+  ]});
+  for(let i=0;i<this.e.nl;i++){
+   const L=this.e.layers[i],C=this.layerGPU[i];
+   L._rmsA=d.createBindGroup({layout:this.pipes.rms.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.x}},{binding:1,resource:{buffer:L._anGPU}},
+    {binding:2,resource:{buffer:this.norm}},{binding:3,resource:{buffer:this.normParam}}
+   ]});
+   L._rope=d.createBindGroup({layout:this.pipes.rope.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.qv}},{binding:1,resource:{buffer:this.kv}},{binding:2,resource:{buffer:this.vv}},
+    {binding:3,resource:{buffer:this.qrot}},{binding:4,resource:{buffer:C.K}},{binding:5,resource:{buffer:C.V}},
+    {binding:6,resource:{buffer:this.ropeParam}}
+   ]});
+   L._score=d.createBindGroup({layout:this.pipes.score.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.qrot}},{binding:1,resource:{buffer:C.K}},
+    {binding:2,resource:{buffer:this.scores}},{binding:3,resource:{buffer:this.attParam}}
+   ]});
+   L._soft=d.createBindGroup({layout:this.pipes.softmax.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.scores}},{binding:1,resource:{buffer:this.attParam}}
+   ]});
+   L._att=d.createBindGroup({layout:this.pipes.attout.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.scores}},{binding:1,resource:{buffer:C.V}},
+    {binding:2,resource:{buffer:this.att}},{binding:3,resource:{buffer:this.attParam}}
+   ]});
+   L._res=d.createBindGroup({layout:this.pipes.residual.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.x}},{binding:1,resource:{buffer:this.tmp}},{binding:2,resource:{buffer:this.vecDimParam}}
+   ]});
+   L._rmsF=d.createBindGroup({layout:this.pipes.rms.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.x}},{binding:1,resource:{buffer:L._fnGPU}},
+    {binding:2,resource:{buffer:this.norm}},{binding:3,resource:{buffer:this.normParam}}
+   ]});
+   L._swiglu=d.createBindGroup({layout:this.pipes.swiglu.getBindGroupLayout(0),entries:[
+    {binding:0,resource:{buffer:this.gate}},{binding:1,resource:{buffer:this.up}},
+    {binding:2,resource:{buffer:this.ff}},{binding:3,resource:{buffer:this.ffParam}}
+   ]})
+  }
+ }
+ updateParams(pos){
+  const e=this.e;
+  this.d.queue.writeBuffer(this.normParam,0,new Uint32Array([e.dim,f32Bits(e.eps),0,0]));
+  this.d.queue.writeBuffer(this.vecDimParam,0,new Uint32Array([e.dim,0,0,0]));
+  this.d.queue.writeBuffer(this.ffParam,0,new Uint32Array([e.ff,0,0,0]));
+  this.d.queue.writeBuffer(this.argmaxParam,0,new Uint32Array([Number(e.out.dims[1]),0,0,0]));
+
+  const rp=new ArrayBuffer(64),rv=new DataView(rp);
+  rv.setUint32(0,pos,true);rv.setUint32(4,e.nh,true);rv.setUint32(8,e.nkv,true);rv.setUint32(12,e.hd,true);
+  rv.setUint32(16,this.ctx,true);rv.setUint32(20,String(e.ropeCfg.type).toLowerCase()==='yarn'?1:0,true);
+  rv.setUint32(24,e.ropeMode,true);
+  rv.setFloat32(32,e.ropeCfg.base,true);rv.setFloat32(36,e.ropeCfg.factor,true);rv.setFloat32(40,e.ropeCfg.orig,true);
+  rv.setFloat32(44,e.ropeCfg.betaFast,true);rv.setFloat32(48,e.ropeCfg.betaSlow,true);rv.setFloat32(52,e.ropeCfg.extFactor,true);rv.setFloat32(56,e.ropeCfg.finalAttnFactor,true);
+  rv.setFloat32(60,e.llama4Beta,true);
+  this.d.queue.writeBuffer(this.ropeParam,0,rp);
+
+  const ap=new ArrayBuffer(64),av=new DataView(ap);
+  av.setUint32(0,pos,true);av.setUint32(4,e.nh,true);av.setUint32(8,e.nkv,true);av.setUint32(12,e.hd,true);
+  av.setUint32(16,this.ctx,true);av.setUint32(20,Math.max(1,Math.floor(e.nh/e.nkv)),true);
+  av.setFloat32(32,e.attnScale,true);
+  this.d.queue.writeBuffer(this.attParam,0,ap)
+ }
+ encodeSimple(enc,pipe,bg,count){
+  const p=enc.beginComputePass();p.setPipeline(pipe);p.setBindGroup(0,bg);p.dispatchWorkgroups(Math.ceil(count/256));p.end()
+ }
+ encodeToken(enc,pos,needLogits){
+  const e=this.e;
+  for(let li=0;li<e.nl;li++){
+   const L=e.layers[li];
+   // attention norm
+   {const p=enc.beginComputePass();p.setPipeline(this.pipes.rms);p.setBindGroup(0,L._rmsA);p.dispatchWorkgroups(1);p.end()}
+   // q/k/v projections directly from resident packed weights
+   this.encodeMats(enc,[L._qop,L._kop,L._vop]);
+   // RoPE and K/V write
+   this.encodeSimple(enc,this.pipes.rope,L._rope,Math.max(e.nh,e.nkv)*e.hd);
+   // attention score -> softmax -> weighted V
+   this.encodeSimple(enc,this.pipes.score,L._score,e.nh*(pos+1));
+   {const p=enc.beginComputePass();p.setPipeline(this.pipes.softmax);p.setBindGroup(0,L._soft);p.dispatchWorkgroups(e.nh);p.end()}
+   this.encodeSimple(enc,this.pipes.attout,L._att,e.nh*e.hd);
+   // output projection + residual
+   this.encodeMat(enc,L._oop);this.encodeSimple(enc,this.pipes.residual,L._res,e.dim);
+   // FFN norm + gate/up + fused SwiGLU + down + residual
+   {const p=enc.beginComputePass();p.setPipeline(this.pipes.rms);p.setBindGroup(0,L._rmsF);p.dispatchWorkgroups(1);p.end()}
+   this.encodeMats(enc,[L._gop,L._uop]);
+   this.encodeSimple(enc,this.pipes.swiglu,L._swiglu,e.ff);
+   this.encodeMat(enc,L._dop);this.encodeSimple(enc,this.pipes.residual,L._res,e.dim)
+  }
+  if(needLogits){
+   const p=enc.beginComputePass();p.setPipeline(this.pipes.rms);p.setBindGroup(0,this.normFinalBG);p.dispatchWorkgroups(1);p.end();
+   this.encodeMat(enc,this.outOp)
+  }
+ }
+ async embedding(id){
+  return await this.e.ops.row(this.e.emb,id)
+ }
+ async submitKnown(id,pos,needSample=false){
+  if(pos>=this.ctx)throw Error('GPU KV context limit reached ('+this.ctx+' tokens)');
+  const emb=await this.embedding(id);
+  this.d.queue.writeBuffer(this.x,0,emb.buffer,emb.byteOffset,emb.byteLength);
+  this.updateParams(pos);
+  const enc=this.d.createCommandEncoder();
+  this.encodeToken(enc,pos,needSample);
+  const vocab=Number(this.e.out.dims[1]),logitBytes=vocab*4;
+  if(needSample)enc.copyBufferToBuffer(this.logits,0,this.logitsRead,0,logitBytes);
+  const t0=performance.now();
+  if(!gpu.available||this.d!==gpu.device)throw Error('WebGPU device was lost before token submission');
+  try{this.d.queue.submit([enc.finish()])}catch(e){throw Error('GPU command submission failed: '+String(e&&e.message||e))};
+  if(!needSample)return null;
+  const r0=performance.now();
+  await this.logitsRead.mapAsync(GPUMapMode.READ,0,logitBytes);
+  const logits=new Float32Array(this.logitsRead.getMappedRange(0,logitBytes).slice(0));
+  this.logitsRead.unmap();
+  this.lastProfile={submitMs:r0-t0,readbackMs:performance.now()-r0,readbackBytes:logitBytes,mode:'full-logits'};
+  return logits
+ }
+ // Certified prompt prefill: enqueue known tokens without a validation promise
+ // after every token. Queue ordering preserves x/parameter writes and KV updates;
+ // the final mapped logits synchronize all earlier work. The full health gate still
+ // validates shaders and end-to-end logits before this path is enabled.
+ async submitQueued(id,pos){
+  if(pos>=this.ctx)throw Error('GPU KV context limit reached ('+this.ctx+' tokens)');
+  const emb=await this.embedding(id);
+  this.d.queue.writeBuffer(this.x,0,emb.buffer,emb.byteOffset,emb.byteLength);
+  this.updateParams(pos);
+  const enc=this.d.createCommandEncoder();
+  this.encodeToken(enc,pos,false);
+  this.d.queue.submit([enc.finish()]);
+ }
+ // Hidden-reasoning fast path: the existing validated GPU argmax shader selects
+ // the next token on-device. Only one u32 (4 bytes) crosses back to JavaScript.
+ async submitKnownArgmax(id,pos){
+  if(pos>=this.ctx)throw Error('GPU KV context limit reached ('+this.ctx+' tokens)');
+  const emb=await this.embedding(id);
+  this.d.queue.writeBuffer(this.x,0,emb.buffer,emb.byteOffset,emb.byteLength);
+  this.updateParams(pos);
+  const enc=this.d.createCommandEncoder();
+  this.encodeToken(enc,pos,true);
+  this.encodeSimple(enc,this.pipes.argmax,this.argmaxBG,1);
+  enc.copyBufferToBuffer(this.tokenOut,0,this.tokenRead,0,4);
+  const t0=performance.now();
+  if(!gpu.available||this.d!==gpu.device)throw Error('WebGPU device was lost before argmax submission');
+  try{this.d.queue.submit([enc.finish()])}catch(e){throw Error('GPU argmax submission failed: '+String(e&&e.message||e))};
+  const r0=performance.now();
+  await this.tokenRead.mapAsync(GPUMapMode.READ,0,4);
+  const token=new Uint32Array(this.tokenRead.getMappedRange(0,4).slice(0))[0];
+  this.tokenRead.unmap();
+  this.lastProfile={submitMs:r0-t0,readbackMs:performance.now()-r0,readbackBytes:4,mode:'gpu-argmax'};
+  return token
+ }
+ async argmaxCurrent(){
+  const vocab=Number(this.e.out.dims[1]);
+  this.d.queue.writeBuffer(this.argmaxParam,0,new Uint32Array([vocab,0,0,0]));
+  const enc=this.d.createCommandEncoder();
+  this.encodeSimple(enc,this.pipes.argmax,this.argmaxBG,1);
+  enc.copyBufferToBuffer(this.tokenOut,0,this.tokenRead,0,4);
+  this.d.queue.submit([enc.finish()]);
+  await this.tokenRead.mapAsync(GPUMapMode.READ,0,4);
+  const token=new Uint32Array(this.tokenRead.getMappedRange(0,4).slice(0))[0];
+  this.tokenRead.unmap();return token
+ }
+ async prefillNoLogits(ids,startPos,status){
+  let pos=startPos;
+  for(let i=0;i<ids.length;i++){
+   if((i&7)===0||i===ids.length-1)status?.(`Prefill ${i+1}/${ids.length} · no output-head readback`);
+   await this.submitQueued(ids[i],pos);pos++
+  }
+  return {pos}
+ }
+ async prefillArgmax(ids,startPos,status){
+  if(!ids.length)return {nextId:null,pos:startPos};
+  let pos=startPos;
+  for(let i=0;i<ids.length-1;i++){
+   if((i&7)===0)status?.(`Prefill ${i+1}/${ids.length} · queued GPU`);
+   await this.submitQueued(ids[i],pos);pos++
+  }
+  status?.(`Prefill ${ids.length}/${ids.length} · 4-byte GPU token`);
+  const nextId=await this.submitKnownArgmax(ids[ids.length-1],pos);pos++;
+  return {nextId,pos}
+ }
+ async prefill(ids,startPos,status){
+  if(!ids.length)return {next:null,pos:startPos};
+  let pos=startPos;
+  // No per-token GPU readback and no per-token validation synchronization.
+  for(let i=0;i<ids.length-1;i++){
+   if((i&7)===0||i===ids.length-2)status?.(`Prefill ${i+1}/${ids.length} · queued GPU`);
+   await this.submitQueued(ids[i],pos);pos++
+  }
+  status?.(`Prefill ${ids.length}/${ids.length} · GPU logits`);
+  const logits=await this.submitKnown(ids[ids.length-1],pos,true);pos++;
+  return {logits,pos}
+ }
+ async decode(id,pos,status){
+  status?.(`Decode token ${pos+1} · quality logits`);
+  const logits=await this.submitKnown(id,pos,true);
+  return {logits,pos:pos+1}
+ }
+ async decodeArgmax(id,pos,status){
+  status?.(`Decode token ${pos+1} · GPU hidden fast path`);
+  const nextId=await this.submitKnownArgmax(id,pos);
+  return {nextId,pos:pos+1}
+ }
+ clear(){
+  // K/V content beyond current pos is ignored, so resetting position is enough.
+ }
+}
+
+class MistralFinalGPU extends MistralEngine{
+ async init(){
+  this.isFoundryLlama=String(this.em.meta['general.architecture']||'').toLowerCase()==='llama';
+  MODEL_HEALTH={ready:false,stage:'Tokenizer validation',checks:[],warnings:[],topTokens:[],error:null};
+  healthSet(this.isFoundryLlama?'Validating Foundry SentencePiece tokenizer':'Validating exact Tekken tokenizer',5);
+  const tokTest=this.isFoundryLlama?this.tok.selfTestLlama():this.tok.selfTest();
+  healthAdd(
+    this.isFoundryLlama?'Foundry SentencePiece BPE configuration':'Tekken tokenizer configuration',true,
+    tokTest.pre+' · model='+tokTest.model+
+    ' · add_bos='+tokTest.addBos+' · add_eos='+tokTest.addEos
+  );
+  await super.init();if(!gpu.available)throw Error('Stable v19 transformer runtime requires WebGPU');
+
+  const expect=(t,dims,label)=>{
+    if(!t)throw Error('Missing '+label);
+    if(t.dims.length!==dims.length||dims.some((v,i)=>Number(t.dims[i])!==v)){
+      throw Error(label+' shape mismatch: expected ['+dims.join(',')+'] got ['+t.dims.join(',')+']')
+    }
+  };
+  const vocab=Number(this.emb.dims[1]);
+  expect(this.emb,[this.dim,vocab],'token_embd.weight');
+  expect(this.norm,[this.dim],'output_norm.weight');
+  expect(this.out,[this.dim,vocab],'output.weight');
+  for(let i=0;i<this.layers.length;i++){
+    const L=this.layers[i],qout=this.nh*this.hd,kvout=this.nkv*this.hd;
+    expect(L.q,[this.dim,qout],'blk.'+i+'.attn_q.weight');
+    expect(L.k,[this.dim,kvout],'blk.'+i+'.attn_k.weight');
+    expect(L.v,[this.dim,kvout],'blk.'+i+'.attn_v.weight');
+    expect(L.o,[qout,this.dim],'blk.'+i+'.attn_output.weight');
+    expect(L.an,[this.dim],'blk.'+i+'.attn_norm.weight');
+    expect(L.fn,[this.dim],'blk.'+i+'.ffn_norm.weight');
+    expect(L.g,[this.dim,this.ff],'blk.'+i+'.ffn_gate.weight');
+    expect(L.u,[this.dim,this.ff],'blk.'+i+'.ffn_up.weight');
+    expect(L.d,[this.ff,this.dim],'blk.'+i+'.ffn_down.weight')
+  }
+  healthAdd(this.isFoundryLlama?'Foundry Llama tensor graph':'Mistral3 tensor graph',true,this.layers.length+' layers · hidden '+this.dim+' · heads '+this.nh+'/'+this.nkv);
+  healthAdd('GGML RoPE ordering',true,this.ropeMode===0?'NORMAL (0), adjacent GGUF pairs':'NEOX (2), half split');
+  const dense=this.layers
+   .flatMap(L=>[L.q,L.k,L.v,L.o,L.g,L.u,L.d])
+   .find(t=>t&&(t.qt===0||t.qt===1||t.qt===30));
+  const q4=this.layers
+   .flatMap(L=>[L.q,L.k,L.o,L.g,L.u,L.d])
+   .find(t=>t&&t.qt===12);
+  const q6=this.layers.map(L=>L.v).find(t=>t&&t.qt===14)||
+   (this.out.qt===14?this.out:null);
+  this.weightSelfTests=[];
+
+  const cached=this.cachedHealth();
+
+  const runTensorTests=async(t,label,startProgress)=>{
+   if(!t)return;
+   const rows=Number(t.dims[1]);
+   const tests=cached
+    ?[Math.floor(rows/2)]
+    :[0,Math.floor(rows/2),rows-1].filter((x,i,a)=>a.indexOf(x)===i);
+   const results=[];
+
+   for(let i=0;i<tests.length;i++){
+    healthSet(
+     'Validating '+label+' row '+(i+1)+'/'+tests.length,
+     startProgress+i*4
+    );
+    const r=await this.ops.qgpu.selfTestRow(this.r,t,tests[i]);
+    this.weightSelfTests.push(r);
+    results.push(r);
+    if(!r.ok){
+     throw Error(
+      label+' independent GPU self-test failed on '+r.tensor+
+      ' row '+r.row+' · expected '+r.expected+
+      ' got '+r.actual+' relerr '+r.rel
+     )
+    }
+   }
+
+   healthAdd(
+    label+' independent row math',
+    true,
+    tests.length+' row'+(tests.length===1?'':'s')+
+    ' · '+(this.ops.qgpu.useSubgroups?'RDNA subgroup':'baseline')+
+    ' · max rel '+Math.max(...results.map(x=>x.rel)).toExponential(2)
+   )
+  };
+
+  if(this.isFoundryLlama)await runTensorTests(dense,QINFO[dense?.qt]?.name||'dense',15);
+  await runTensorTests(q4,'Q4_K',25);
+  await runTensorTests(q6,'Q6_K',35);
+
+  healthSet('Building '+this.layers.length+'-layer GPU graph',50);
+  this.graph=await new FinalMistralGraph(this).init();
+
+  if(cached){
+   MODEL_HEALTH.topTokens=['Quick-certified startup: full 40-layer diagnostic probe skipped'];
+   healthAdd(
+    'Cached model certification',
+    true,
+    'previous PASS · '+new Date(cached.at).toLocaleString()
+   )
+  }else{
+   healthSet('Running end-to-end logit probe',88);
+   const probe=await this.healthProbe();
+   MODEL_HEALTH.topTokens=probe.topTokens;
+   healthAdd(
+    'End-to-end logits',
+    true,
+    'finite '+probe.finite+'/'+probe.total+' · σ '+probe.std.toFixed(4)
+   );
+   const gpuFastArgmax=await this.graph.argmaxCurrent();
+   if(gpuFastArgmax!==probe.maskedArgmax){
+    throw Error('GPU hidden argmax mismatch: expected '+probe.maskedArgmax+' got '+gpuFastArgmax)
+   }
+   healthAdd('GPU hidden-token argmax',true,'masked reference match · token '+gpuFastArgmax);
+   this.saveHealthCertificate({std:probe.std,gpuFastArgmax})
+  }
+
+  healthSet(this.isFoundryLlama?'Priming Foundry BOS KV cache':'Priming fixed system KV cache',96);
+  await this.primeSystemSession();
+  MODEL_HEALTH.ready=true;
+  healthSet(this.isFoundryLlama?'PASS — Foundry Llama runtime ready':'PASS — Stable Turbo runtime ready',100);
+  return this
+ }
+ resetSession(){
+  this.pos=0;this.sessionStarted=false;this.sampler=new LlamaStyleSampler(this.tok);if(this.graph)this.graph.clear()
+ }
+ buildSystemPrompt(includeMemory=true){
+  let system=this.tok.defaultSystemMessage();const memory=includeMemory?NEXUS_MEMORY.systemSnapshot():'';
+  if(memory)system+='\n\n# PERSISTENT USER MEMORY\nThese are facts the user previously stated. Use them only when relevant and treat later corrections as authoritative.\n'+memory;
+  return system
+ }
+ async startSessionIds(includeMemory=false){
+  if(this.sessionStarted)return [];this.sessionStarted=true;
+  if(this.isFoundryLlama)return this.tok.bos>=0?[this.tok.bos]:[];
+  const ids=[this.tok.bos],sp0=this.tok.control('[SYSTEM_PROMPT]'),sp1=this.tok.control('[/SYSTEM_PROMPT]');ids.push(sp0,...this.tok.encodeSpecialAware(this.buildSystemPrompt(includeMemory)),sp1);return ids
+ }
+ async primeSystemSession(){
+  // Safe speed optimization: precompute only the fixed system segment.
+  // No reasoning, sampling, RoPE, quantization, or chat-template behavior
+  // is changed relative to working v13.
+  this.resetSession();
+  const session=await this.startSessionIds(false);
+  if(!session.length){
+   this.systemPrimedTokens=0;
+   this.systemPrimePromise=null;
+   return
+  }
+
+  const started=performance.now();
+  setBadge((this.isFoundryLlama?'Priming Foundry BOS KV · ':'Priming fixed system KV · ')+session.length+' tokens',gpu.available);
+  const pf=await this.graph.prefill(session,this.pos,()=>{});
+  this.pos=pf.pos;
+  this.systemPrimedTokens=session.length;
+  this.systemPrimeSeconds=(performance.now()-started)/1000;
+  this.systemPrimePromise=null
+ }
+ async ensureSystemPrimed(){
+  if(this.sessionStarted&&this.pos>0)return;
+  if(!this.systemPrimePromise){
+   this.systemPrimePromise=this.primeSystemSession()
+  }
+  await this.systemPrimePromise
+ }
+ healthCacheKey(){
+  const f=this.r&&this.r.file?this.r.file:null;
+  const ident=[
+   'stable-v19-foundry-llama-integration',
+   String(this.em.meta['general.name']||''),
+   String(this.em.meta['general.architecture']||''),
+   f?String(f.name):'',
+   f?String(f.size):'',
+   f?String(f.lastModified||0):'',
+   String(gpu.label||''),
+   String(gpu.subgroupMinSize||0),
+   String(gpu.subgroupMaxSize||0)
+  ].join('|');
+
+  let h=2166136261;
+  for(let i=0;i<ident.length;i++){
+   h^=ident.charCodeAt(i);
+   h=Math.imul(h,16777619)
+  }
+  return 'nexus.health.'+(h>>>0).toString(16)
+ }
+ cachedHealth(){
+  try{
+   const raw=localStorage.getItem(this.healthCacheKey());
+   if(!raw)return null;
+   const x=JSON.parse(raw);
+   return x&&x.pass===true?x:null
+  }catch(_){return null}
+ }
+ saveHealthCertificate(extra={}){
+  try{
+   localStorage.setItem(
+    this.healthCacheKey(),
+    JSON.stringify({
+     pass:true,
+     runtime:'stable-v19-foundry-llama-integration',
+     at:Date.now(),
+     subgroup:!!this.ops.qgpu.useSubgroups,
+     ...extra
+    })
+   )
+  }catch(_){}
+ }
+ async healthProbe(){
+  this.resetSession();
+  const session=await this.startSessionIds(false),ids=this.isFoundryLlama?[...session,...this.tok.encodeText('Hello')]:[...session,this.tok.control('[INST]'),...this.tok.encodeText('Hello'),this.tok.control('[/INST]')];
+  const pf=await this.graph.prefill(ids,0,()=>{}),logits=pf.logits;
+  let finite=0,mean=0,m2=0,n=0;
+  for(const v of logits){if(!Number.isFinite(v))continue;finite++;n++;const d=v-mean;mean+=d/n;m2+=d*(v-mean)}
+  const std=n>1?Math.sqrt(m2/(n-1)):0;
+  if(finite!==logits.length||!Number.isFinite(std)||std<1e-5)throw Error('End-to-end logits are degenerate: finite '+finite+'/'+logits.length+' std '+std);
+  const topRaw=heapTopK(logits,16),top=topRaw.slice(0,8).map(x=>x.id+': '+JSON.stringify(this.tok.tokens[x.id]||'')+' ('+x.logit.toFixed(3)+')');
+  if(top[0]&&top[0].startsWith(this.tok.unk+':'))throw Error('Diagnostic top token is UNK: '+top.join(' | '));
+  const thinkId=this.tok.specialId('[THINK]'),thinkEnd=this.tok.specialId('[/THINK]');
+  let thinkRank=null;
+  if(thinkId>=0){
+    const lv=logits[thinkId];let better=0;
+    for(const v of logits)if(v>lv)better++;
+    thinkRank=better+1;
+    top.push('[THINK] rank: '+thinkRank+' / '+logits.length+' · logit '+Number(lv).toFixed(3))
+  }
+  // CPU reference for the exact static mask used by GPU hidden argmax.
+  let maskedArgmax=-1,maskedBest=-Infinity;
+  for(let i=0;i<logits.length;i++){
+    if(i===0||i===this.tok.bos)continue;
+    const special=this.tok.types.length>i&&Number(this.tok.types[i])===3;
+    if(special&&i!==this.tok.eos&&i!==thinkEnd)continue;
+    if(logits[i]>maskedBest){maskedBest=logits[i];maskedArgmax=i}
+  }
+  this.resetSession();
+  return {finite,total:logits.length,std,topTokens:top,thinkRank,maskedArgmax}
+ }
+ visibleControlStop(id,tokenType,thinkStart,thinkEnd){
+  if(id===this.tok.eos)return true;
+  if(id===thinkStart||id===thinkEnd)return false;
+  // Tekken marks control/special tokens as type 3. Once visible prose has begun,
+  // an unexpected control token is a turn boundary, not user-facing text.
+  return Number(tokenType)===3;
+ }
+ runawayCycle(ids){
+  const n=ids.length;if(n<12)return false;
+  // Same token repeated excessively.
+  let same=1;for(let i=n-1;i>0&&ids[i-1]===ids[n-1];i--)same++;
+  if(same>=8)return true;
+  // Repeated 4/6/8-token cycles three times.
+  for(const span of [4,6,8]){
+   if(n<span*3)continue;let ok=true;
+   for(let j=0;j<span*2;j++)if(ids[n-1-j]!==ids[n-1-j-span]){ok=false;break}
+   if(ok)return true;
+  }
+  return false;
+ }
+ async generateFoundryLlama(text,hist,maxNew,temp,topK,onToken,status){
+  // Application 11 trains conventional supervised Llama sequences as
+  // BOS + prompt + completion + EOS. Keep the browser runtime aligned to that
+  // exact contract instead of injecting Mistral control tokens the model never saw.
+  this.resetSession();
+  await this.ensureSystemPrimed();
+  this.sampler.beginTurn();
+  const ids=this.tok.encodeText(text);
+  if(!ids.length)throw Error('Prompt produced no tokenizer IDs');
+  status?.('Prefilling Foundry Llama prompt…');
+  const pre0=performance.now(),pf=await this.graph.prefill(ids,this.pos,status);this.pos=pf.pos;
+  let logits=pf.logits,out='',generated=0,finalTokens=0,firstVisibleMs=null,stopReason='',visibleIds=[];
+  const preSec=(performance.now()-pre0)/1000,dec0=performance.now(),decoder=this.tok.makeStreamDecoder();
+  const visibleBudget=Math.max(16,Number($('maxNewTokens')?.value??256));
+  this.lastTokenTrace=[];
+  const finishStats=(extra={})=>{this.lastStats={prefillTokens:ids.length+this.systemPrimedTokens,prefillSec:preSec,decodeTokens:generated,decodeSec:(performance.now()-dec0)/1000,reasonTokens:0,finalTokens,hiddenReasoning:false,effectiveReasonBudget:0,reasonLevel:'foundry-llama',reasonWhy:'Application 11 BOS/prompt/completion/EOS contract',gpuHiddenSteps:0,gpuVisibleSteps:0,fullLogitSteps:generated+1,forcedReasonClose:false,hiddenReadbackBytes:0,visibleReadbackBytes:(generated+1)*Number(this.out.dims[1])*4,visibleEngine:'quality-sampler',firstVisibleMs,stopReason,...extra}};
+  status?.('Writing answer…');
+  for(let n=0;n<visibleBudget;n++){
+    if(NEXUS_ABORT){stopReason='stopped';finishStats({stopped:true});return out}
+    const id=this.sampler.sample(logits);
+    if(!Number.isInteger(id)||id<0||id>=this.tok.tokens.length)throw Error('Sampler returned invalid token ID '+id);
+    const tokenText=this.tok.tokens[id]||'',tokenType=this.tok.types.length>id?Number(this.tok.types[id]):-1;
+    this.lastTokenTrace.push({id,token:tokenText,type:tokenType});if(this.lastTokenTrace.length>24)this.lastTokenTrace.shift();
+    this.sampler.observe(id);generated++;
+    if(id===this.tok.eos){stopReason='eos';const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out}
+    if(Number(tokenType)===3){stopReason='control';const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out}
+    const bytes=this.tok.bytesFor(id),piece=bytes.length?decoder.decode(bytes,{stream:true}):'';
+    if(piece){if(firstVisibleMs==null)firstVisibleMs=performance.now()-dec0;out+=piece;onToken(piece)}
+    visibleIds.push(id);if(visibleIds.length>64)visibleIds.shift();finalTokens++;
+    if(this.runawayCycle(visibleIds)){stopReason='repetition-guard';const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out}
+    const d=await this.graph.decode(id,this.pos,status);this.pos=d.pos;logits=d.logits
+  }
+  stopReason='visible-budget';const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats({budgetStopped:true});return out
+ }
+ async generate(text,hist,maxNew,temp,topK,onToken,status){
+  if(this.isFoundryLlama)return await this.generateFoundryLlama(text,hist,maxNew,temp,topK,onToken,status);
+  await this.ensureSystemPrimed();
+  const session=await this.startSessionIds();
+  const inst0=this.tok.control('[INST]'),inst1=this.tok.control('[/INST]');
+  const ids=[...session,inst0,...this.tok.encodeText(text),inst1];
+  this.sampler.beginTurn();
+
+  const decoder=this.tok.makeStreamDecoder();
+  const thinkStart=this.tok.specialId('[THINK]'),thinkEnd=this.tok.specialId('[/THINK]');
+  const reasonPlan=classifyReasoningNeed(text);
+  const reasonBudget=Math.max(0,reasonPlan.budget|0);
+  const visibleBudget=Math.max(16,Number($('maxNewTokens')?.value??256));
+  const totalBudget=visibleBudget+reasonBudget+24;
+  const reasoningProfile=/reasoning/i.test(String(this.em.meta['general.name']||''))&&thinkStart>=0&&thinkEnd>=0;
+  const gpuHidden=reasoningProfile&&reasonBudget>0&&reasonPlan.gpuHidden&&this.graph&&typeof this.graph.decodeArgmax==='function';
+  const gpuVisible=shouldGPUVisible(reasonPlan)&&this.graph&&typeof this.graph.decodeArgmax==='function';
+
+  // Stable Turbo avoids an otherwise wasted 131K-vocabulary output projection at the
+  // end of prompt prefill whenever we are about to force a [THINK] token.
+  const pre0=performance.now();
+  let logits=null,nextFastId=null,nextVisibleId=null,pf;
+  if(reasoningProfile&&reasonBudget>0){
+   pf=await this.graph.prefillNoLogits(ids,this.pos,status);this.pos=pf.pos;
+  }else if(gpuVisible){
+   pf=await this.graph.prefillArgmax(ids,this.pos,status);this.pos=pf.pos;nextVisibleId=pf.nextId;
+  }else{
+   pf=await this.graph.prefill(ids,this.pos,status);this.pos=pf.pos;logits=pf.logits;
+  }
+  const preSec=(performance.now()-pre0)/1000;
+
+  let out='',generated=0,finalTokens=0,reasonTokens=0,thinking=false,seenThink=false,dec0=performance.now(),firstVisibleMs=null,visibleIds=[];
+  let gpuHiddenSteps=0,gpuVisibleSteps=(gpuVisible&&!(reasoningProfile&&reasonBudget>0))?1:0,fullLogitSteps=0,forcedClose=false,stopReason='';
+  this.lastTokenTrace=[];
+
+  if(reasoningProfile&&reasonBudget>0){
+    thinking=true;seenThink=true;status?.('Reasoning privately · '+reasonPlan.level+' · '+reasonBudget+' token cap…');
+    this.sampler.observe(thinkStart);generated++;
+    if(gpuHidden){
+      const first=await this.graph.decodeArgmax(thinkStart,this.pos,status);
+      this.pos=first.pos;nextFastId=first.nextId;gpuHiddenSteps++
+    }else{
+      const first=await this.graph.decode(thinkStart,this.pos,status);
+      this.pos=first.pos;logits=first.logits;fullLogitSteps++
+    }
+  }else if(reasoningProfile&&thinkStart>=0&&logits){
+    logits[thinkStart]=-Infinity
+  }
+
+  const finishStats=(extra={})=>{
+    this.lastStats={
+      prefillTokens:ids.length,prefillSec:preSec,decodeTokens:generated,
+      decodeSec:(performance.now()-dec0)/1000,reasonTokens,finalTokens,
+      hiddenReasoning:seenThink,effectiveReasonBudget:reasonBudget,
+      reasonLevel:reasonPlan.level,reasonWhy:reasonPlan.why,
+      gpuHiddenSteps,gpuVisibleSteps,fullLogitSteps,forcedReasonClose:forcedClose,
+      hiddenReadbackBytes:gpuHiddenSteps*4,visibleReadbackBytes:gpuVisibleSteps*4+fullLogitSteps*Number(this.out.dims[1])*4,
+      visibleEngine:gpuVisible?'gpu-greedy':'quality-sampler',firstVisibleMs,stopReason,
+      ...extra
+    }
+  };
+
+  for(let n=0;n<totalBudget;n++){
+   if(NEXUS_ABORT){finishStats({stopped:true});return out}
+   let id;
+   if(thinking&&gpuHidden&&nextFastId!=null){id=nextFastId;nextFastId=null}
+   else if(!thinking&&gpuVisible&&nextVisibleId!=null){id=nextVisibleId;nextVisibleId=null}
+   else id=this.sampler.sample(logits);
+
+   if(thinking&&id===this.tok.eos&&thinkEnd>=0)id=thinkEnd;
+   if(!Number.isInteger(id)||id<0||id>=this.tok.tokens.length)throw Error('Sampler returned invalid token ID '+id+' for vocab '+this.tok.tokens.length);
+
+   const tokenText=this.tok.tokens[id]||'';
+   const tokenType=this.tok.types.length>id?Number(this.tok.types[id]):-1;
+   this.lastTokenTrace.push({id,token:tokenText,type:tokenType});if(this.lastTokenTrace.length>24)this.lastTokenTrace.shift();
+   this.sampler.observe(id);generated++;
+
+   if(id===thinkStart){
+    thinking=true;seenThink=true;status?.('Reasoning privately · '+reasonPlan.level+'…');
+   }else if(id===thinkEnd){
+    thinking=false;status?.('Writing answer…');
+   }else if(id===this.tok.eos){
+    stopReason='eos';
+    await this.graph.submitKnown(id,this.pos,false);this.pos++;
+    const tail=decoder.decode();if(tail&&!thinking){if(firstVisibleMs==null)firstVisibleMs=performance.now()-dec0;out+=tail;onToken(tail)}
+    finishStats();return out
+   }else if(thinking){
+    reasonTokens++;
+    if(reasonTokens>=reasonBudget&&thinkEnd>=0){
+      forcedClose=true;
+      await this.graph.submitKnown(id,this.pos,false);this.pos++;
+      this.sampler.observe(thinkEnd);generated++;
+      thinking=false;status?.('Writing answer…');
+      if(gpuVisible){
+       const d=await this.graph.decodeArgmax(thinkEnd,this.pos,status);this.pos=d.pos;nextVisibleId=d.nextId;gpuVisibleSteps++
+      }else{
+       const d=await this.graph.decode(thinkEnd,this.pos,status);this.pos=d.pos;logits=d.logits;fullLogitSteps++
+      }
+      continue
+    }
+   }else{
+    // Do not print unexpected Tekken control markers into chat. Treat them as
+    // a clean model turn boundary once visible answer generation has started.
+    if(this.visibleControlStop(id,tokenType,thinkStart,thinkEnd)){
+      stopReason='visible-control';
+      if(this.tok.eos>=0){await this.graph.submitKnown(this.tok.eos,this.pos,false);this.pos++}
+      const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out
+    }
+    const bytes=this.tok.bytesFor(id),piece=bytes.length?decoder.decode(bytes,{stream:true}):'';
+    if(piece){if(firstVisibleMs==null)firstVisibleMs=performance.now()-dec0;out+=piece;onToken(piece)}
+    visibleIds.push(id);if(visibleIds.length>64)visibleIds.shift();
+    finalTokens++;
+    if(this.runawayCycle(visibleIds)){
+      stopReason='repetition-guard';
+      if(this.tok.eos>=0){await this.graph.submitKnown(this.tok.eos,this.pos,false);this.pos++}
+      const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out
+    }
+    if(finalTokens>=visibleBudget){
+      stopReason='visible-budget';
+      if(this.tok.eos>=0){await this.graph.submitKnown(this.tok.eos,this.pos,false);this.pos++}
+      const tail=decoder.decode();if(tail){out+=tail;onToken(tail)}finishStats();return out
+    }
+   }
+
+   if(thinking&&gpuHidden){
+    const d=await this.graph.decodeArgmax(id,this.pos,status);this.pos=d.pos;nextFastId=d.nextId;gpuHiddenSteps++
+   }else if(!thinking&&gpuVisible){
+    const d=await this.graph.decodeArgmax(id,this.pos,status);this.pos=d.pos;nextVisibleId=d.nextId;gpuVisibleSteps++
+   }else{
+    const d=await this.graph.decode(id,this.pos,status);this.pos=d.pos;logits=d.logits;fullLogitSteps++
+   }
+  }
+  stopReason=stopReason||'total-budget';const tail=decoder.decode();if(tail&&!thinking){out+=tail;onToken(tail)}finishStats({budgetStopped:true});return out
+ }
+
+
+}
+
+
+class NexusGRUEngine{
+  constructor(r,em,plan){this.r=r;this.em=em;this.p=plan.gru;this.ops=new TensorOps(r,em);this.tok=new Tok(em)}
+  async init(){
+    this.E=this.p.emb;this.WI=this.p.wih;this.WH=this.p.whh;this.O=this.p.out;this.bi=this.p.bih?await this.ops.vector(this.p.bih):null;this.bh=this.p.bhh?await this.ops.vector(this.p.bhh):null;
+    this.hidden=this.WH.dims[0];if(this.WH.dims[1]!==3*this.hidden&&this.WH.dims[0]===3*this.WH.dims[1])this.hidden=this.WH.dims[1];
+    await this.ops.preload([this.E,this.WI,this.WH,this.O],msg=>setBadge(msg,true));
+    return this
+  }
+  reset(){this.h=new Float32Array(this.hidden)}
+  async token(id,status){
+    const x=await this.ops.row(this.E,id),ih=await this.ops.matvec(this.WI,x),hh=await this.ops.matvec(this.WH,this.h),H=this.hidden;
+    if(ih.length!==3*H||hh.length!==3*H)throw Error('NEXUS GRU gate dimensions do not equal 3×hidden');
+    const r=new Float32Array(H),z=new Float32Array(H),n=new Float32Array(H),nh=new Float32Array(H);
+    for(let i=0;i<H;i++){const br=this.bi?this.bi[i]:0,bz=this.bi?this.bi[H+i]:0,bn=this.bi?this.bi[2*H+i]:0;const hr=this.bh?this.bh[i]:0,hz=this.bh?this.bh[H+i]:0,hn=this.bh?this.bh[2*H+i]:0;
+      r[i]=1/(1+Math.exp(-(ih[i]+br+hh[i]+hr)));z[i]=1/(1+Math.exp(-(ih[H+i]+bz+hh[H+i]+hz)));n[i]=Math.tanh(ih[2*H+i]+bn+r[i]*(hh[2*H+i]+hn));nh[i]=(1-z[i])*n[i]+z[i]*this.h[i]}
+    this.h=nh;return await this.ops.matvec(this.O,this.h)
+  }
+  async generate(text,hist,maxNew,temp,topK,onToken,status){this.reset();const ids=this.tok.encode(text,true);let logits=null;for(const id of ids)logits=await this.token(id,status);let out='';for(let n=0;n<maxNew;n++){let id;if(temp<=0){id=0;let m=-Infinity;for(let i=0;i<logits.length;i++)if(logits[i]>m){m=logits[i];id=i}}else id=sampleLogits(logits,temp,topK);if(id===this.tok.eos)break;const p=this.tok.decode(id);out+=p;onToken(p);logits=await this.token(id,status)}return out}
+}
+
+let executionModel=null,executionPlan=null,engine=null;
+async function buildEngine(){
+  executionModel=await buildExecutionModel(reader,model);
+  executionPlan=identifyRuntime(executionModel,model.profile);
+  if(executionPlan.kind==='UNSUPPORTED')throw Error(executionPlan.missing);
+  if(executionPlan.kind==='NEXUS_GRU')engine=await new NexusGRUEngine(reader,executionModel,executionPlan).init();
+  else if(gpu.available)engine=await new MistralFinalGPU(reader,executionModel,executionPlan).init();
+  else engine=await new MistralEngine(reader,executionModel,executionPlan).init();
+  return engine
+}
+
+/* override model loading: parse + identify + allocate the model-specific engine */
+const _compatLoadFile=loadFile;
+loadFile=async function(file){
+  busy=true;MODEL_HEALTH={ready:false,stage:'Loading model',checks:[],warnings:[],topTokens:[],error:null};healthSet('Loading model',1);setBadge('Detecting model format…');
+  try{
+    const first8=new Uint8Array(await file.slice(0,8).arrayBuffer()),sig8=td.decode(first8),isNHSC=sig8==='NHSC1V3\0',isGGUF=td.decode(first8.slice(0,4))==='GGUF';
+    if(!isNHSC&&!isGGUF)throw Error('Choose a normal GGUF or NHSC1 n_*.gguf file.');
+    reader=isNHSC?await new A3Reader(file).init():await new NormalGGUFReader(file).init();
+    if(reader instanceof A3Reader){reader.cacheLimit=currentRAMCache();}
+    setBadge(isNHSC?'Parsing NHSC1 virtual GGUF…':'Parsing GGUF…');
+    model=await parseGGUF(reader);model.profile=classifyModel(model,reader);
+    loaded=true;$('modelTitle').textContent=model.profile.name;$('modelMini').textContent=model.profile.name;
+    setBadge('Building '+model.profile.label+' runtime…',gpu.available);
+    await buildEngine();
+    NEXUS_SKIP_NEWCHAT_RESET=true;
+    newChat();
+    NEXUS_SKIP_NEWCHAT_RESET=false;
+    addAssistant('Loaded '+model.profile.name+' and selected '+executionPlan.label+'.',
+      (isNHSC?'NHSC1 A3':'Normal GGUF')+' · '+(gpu.available?'WebGPU':'CPU fallback')+' · '+executionPlan.kind);
+    setBadge(executionPlan.label+' · '+(gpu.available?'WebGPU':'CPU'),gpu.available)
+  }catch(e){loaded=false;engine=null;executionModel=null;executionPlan=null;MODEL_HEALTH.error=String(e.message||e);healthSet('FAILED — '+MODEL_HEALTH.error,100);addAssistant('Model runtime could not start: '+e.message,'Reference health gate stopped unsafe inference');setBadge('Runtime unavailable')}
+  finally{busy=false;refreshRuntimeInfo()}
+};
+
+/* override chat generation: actual engine selected from the loaded GGUF */
+sendMessage=async function(){
+  if(busy)return;const p=$('prompt'),text=p.value.trim();if(!text)return;
+  if(!loaded||!engine||!MODEL_HEALTH.ready){addAssistant('The model is not ready. Open Model health and confirm every reference check passes.');return}
+  let mm;
+  if((mm=text.match(/^forget(?: that)?\s+(.+)/i))){const n=NEXUS_MEMORY.forget(mm[1]);p.value='';resizeBox();addUser(text);addAssistant(n?('I removed '+n+' matching memory item'+(n===1?'':'s')+'.'):'I did not find a matching stored memory.','Local persistent memory');return}
+  if(/^clear (?:my )?memory$/i.test(text)){p.value='';resizeBox();addUser(text);NEXUS_MEMORY.clear();addAssistant('Persistent local memory cleared.','Local persistent memory');return}
+  const learned=NEXUS_MEMORY.learnUser(text);
+  p.value='';resizeBox();addUser(text);if(history.length===0){chatTitle=text.replace(/\s+/g,' ').slice(0,36);updateRail()}
+  const d=document.createElement('div');d.className='turn asst';d.innerHTML='<div class="av">N</div><div><div class="thinkingState"><span class="thinkingDot"></span><span>Thinking</span></div><div class="answer"></div><div class="meta"></div></div>';$('chat').appendChild(d);
+  const ans=d.querySelector('.answer'),meta=d.querySelector('.meta'),thinkUI=d.querySelector('.thinkingState');busy=true;NEXUS_ABORT=false;setSendMode(true);const maxNew=Math.max(16,Number($('maxNewTokens')?.value??256)),start=performance.now();let full='';
+  try{
+    const onToken=x=>{full+=x;thinkUI.style.display='none';ans.textContent=full;scrollBottom()};
+    const status=x=>{setBadge(x,gpu.available);if(/Reasoning privately/i.test(x)){thinkUI.style.display='flex';thinkUI.querySelector('span:last-child').textContent='Thinking'}if(/Writing answer/i.test(x))thinkUI.style.display='none'};
+    await engine.generate(text,history,maxNew,sampleSettings().temp,sampleSettings().topK,onToken,status);
+    const sec=(performance.now()-start)/1000;let perf=executionPlan.label+' · '+sec.toFixed(1)+' s';
+    if(engine.lastStats){const ps=engine.lastStats.prefillSec>0?engine.lastStats.prefillTokens/engine.lastStats.prefillSec:0,ds=engine.lastStats.decodeSec>0?engine.lastStats.decodeTokens/engine.lastStats.decodeSec:0;perf+=' · prefill '+ps.toFixed(2)+' tok/s · decode '+ds.toFixed(2)+' tok/s';if(engine.lastStats.firstVisibleMs!=null)perf+=' · first text '+(engine.lastStats.firstVisibleMs/1000).toFixed(1)+' s';if(engine.lastStats.hiddenReasoning)perf+=' · reasoned '+engine.lastStats.reasonTokens+' hidden tokens';
+      perf+=' · '+(engine.lastStats.reasonLevel||'reasoning')+' budget '+(engine.lastStats.effectiveReasonBudget??Number($('reasonBudget')?.value??64));if(engine.lastStats.gpuHiddenSteps)perf+=' · GPU hidden '+engine.lastStats.gpuHiddenSteps;if(engine.lastStats.gpuVisibleSteps)perf+=' · GPU visible '+engine.lastStats.gpuVisibleSteps;if(engine.lastStats.visibleEngine)perf+=' · '+engine.lastStats.visibleEngine;if(engine.lastStats.stopReason)perf+=' · stop '+engine.lastStats.stopReason;
+      if(ds>0&&engine.lastStats.decodeTokens>0){const nonReason=Math.max(1,engine.lastStats.decodeTokens-engine.lastStats.reasonTokens),v15Decode=(nonReason+192)/ds,v15Est=engine.lastStats.prefillSec+v15Decode,actualEst=engine.lastStats.prefillSec+engine.lastStats.decodeSec,sp=v15Est/Math.max(.001,actualEst);perf+=' · est v15 '+v15Est.toFixed(1)+' s · '+sp.toFixed(2)+'× faster'}
+      if(engine.lastStats.stopped)perf+=' · stopped';else if(engine.lastStats.budgetStopped)perf+=' · token budget reached'}
+    if(learned.length)perf+=' · learned '+learned.length+' memory';thinkUI.style.display='none';ans.innerHTML=renderMarkdownLite(full||'(The model ended without a visible final answer.)');meta.textContent=perf;addMessageActions(d,full);history.push({user:text,assistant:full});NEXUS_MEMORY.learnTurn(text,full);setBadge(executionPlan.label+' ready · memory '+NEXUS_MEMORY.data.facts.length,gpu.available)
+  }catch(e){
+    thinkUI.style.display='none';ans.textContent='Inference error: '+e.message;meta.textContent='Turn stopped · recovering model session';setBadge('Recovering after inference error…');
+    try{
+      if(engine&&typeof engine.resetSession==='function')engine.resetSession();
+      if(engine&&typeof engine.primeSystemSession==='function')await engine.primeSystemSession();
+      setBadge(executionPlan.label+' recovered · ready',gpu.available);
+      meta.textContent='Turn stopped safely · model session recovered';
+    }catch(re){
+      meta.textContent='Turn stopped · reload model if the next turn fails';
+      setBadge('Inference recovery failed')
+    }
+  }
+  finally{busy=false;NEXUS_ABORT=false;setSendMode(false);p.focus()}
+};
+
+/* augment runtime panel with auto-detected requirements */
+const _oldRefreshRuntimeInfo=refreshRuntimeInfo;
+refreshRuntimeInfo=function(){
+  _oldRefreshRuntimeInfo();
+  if(!executionPlan||!executionModel)return;
+  const a=String(executionModel.meta['general.architecture']||'unknown');
+  const lim=gpu.available&&gpu.device?gpu.device.limits:null;
+  $('runtimeInfo').innerHTML += `
+
+<b>Selected execution engine</b>
+${esc(executionPlan.label)} (${esc(executionPlan.kind)})
+
+<b>Detected architecture</b>
+${esc(a)}
+
+<b>Model resource requirements</b>
+${executionPlan.kind==='NEXUS_GRU'?'GRU gates · embedding lookup · recurrent hidden state · output projection':'Token embeddings · RMSNorm · GQA attention · RoPE · KV cache · SwiGLU FFN · output logits'}
+
+<b>GPU resource plan</b>
+${gpu.available?'WebGPU full-graph mode enabled: packed weights remain resident, activations and per-layer KV caches remain on GPU, and JavaScript receives the final logits only at token boundaries; all transformer activations and KV remain on GPU.':'WebGPU unavailable; slow JavaScript CPU fallback will be used.'}
+
+<b>WebGPU limits</b>
+${lim?('max storage binding: '+Number(lim.maxStorageBufferBindingSize).toLocaleString()+' bytes\nmax buffer size: '+Number(lim.maxBufferSize).toLocaleString()+' bytes\nmax compute workgroup: '+Number(lim.maxComputeInvocationsPerWorkgroup)):'—'}
+
+<b>20 GB AMD optimization profile</b>
+VRAM residency target: ${fmtBytes(currentVRAMBudget())}
+Quantized weights resident: ${fmtBytes(AMD_PROFILE.residentBytes)}
+Resident tensors: ${AMD_PROFILE.residentTensorCount}
+Streaming fallback tensors: ${AMD_PROFILE.streamingTensorCount}
+System-RAM NHSC1 cache target: ${fmtBytes(currentRAMCache())}
+NHSC1 parallel decode: ${reader instanceof A3Reader?reader.parallel:'—'}
+NHSC1 preload throughput: ${reader instanceof A3Reader?(()=>{const s=reader.preloadReport();return s.decodedMBps.toFixed(1)+' MiB/s decoded · '+s.blocks.toLocaleString()+' blocks · '+s.batches.toLocaleString()+' batched reads'})():'Not applicable'}
+GPU upload path: unmapped COPY_DST · 8 MiB queue.writeBuffer chunks
+CPU-pinned embedding table: ${engine&&engine.ops&&engine.ops.qgpu&&engine.emb&&engine.ops.qgpu.resident.get(engine.emb.name)?.cpuPinned?'Yes':'No'}
+shader-f16 granted: ${gpu.f16?'Yes':'No'}
+
+<b>Weight execution path</b>
+Packed GGUF Q4/Q5/Q6 bytes → persistent GPUBuffer → WGSL decode inside dot product → FP32 accumulation.
+The quantized matrices are no longer expanded to Float32 on the CPU for every layer.
+
+<b>Transformer correctness / compatibility</b>
+Tokenizer path: ${engine&&engine.isFoundryLlama?'Foundry SentencePiece BPE (GGUF scores + byte fallback)':(executionPlan.kind==='MISTRAL'?'Tekken':'Architecture dependent')}
+Prompt framing: ${engine&&engine.isFoundryLlama?'Application 11 BOS + prompt → completion + EOS contract':(executionPlan.kind==='MISTRAL'?'[INST] IDs, not literal text':'Architecture dependent')}
+RoPE: ${engine&&engine.ropeCfg?((engine.ropeMode===0?'GGML NORMAL':'GGML NEOX')+' · '+engine.ropeCfg.type+' · factor '+engine.ropeCfg.factor):'—'}
+Tekken ignore_merges: ${engine&&engine.tok?String(engine.tok.ignoreMerges):'—'}
+Reference memory injection: ${engine&&engine.isFoundryLlama?'disabled — Foundry model uses its supervised training prompt contract':'disabled while validating base-model fidelity'}
+Attention scale: ${engine&&engine.attnScale?engine.attnScale:'—'}
+Persistent conversation KV: ${engine&&engine.sessionStarted?'Active':'Ready on first prompt'}
+Final GPU graph: all 40 layers remain GPU-resident
+Projection pass fusion: Q/K/V + gate/up grouped · 120 fewer compute-pass boundaries/token
+Intermediate activation readbacks: 0
+KV-cache readbacks: 0
+Generated-token readback: ULTRA Auto = 4-byte token IDs for casual/simple visible text; full logits only for quality-sampled prompts
+Prompt prefill readbacks: 0 full-logit reads when forced reasoning starts; Auto casual/simple uses one 4-byte GPU token
+Sampling: GPU argmax for ULTRA hidden reasoning · Auto GPU greedy for casual/simple · llama-style sampler for normal/complex
+GPU KV context: ${gpuContextLimit().toLocaleString()} tokens
+KV storage: packed FP16 (2 values/u32)
+Estimated 4K KV for this model: ~0.63 GiB
+WebGPU device generation: ${gpu.generation||0}
+Device lost: ${gpu.lostInfo?(gpu.lostInfo.reason+' · '+gpu.lostInfo.message):'No'}
+Last GPU error: ${gpu.lastGPUError||'None'}
+Output tensor: ${engine&&engine.out?(engine.out.name+' '+JSON.stringify(engine.out.dims)+' '+(QINFO[engine.out.qt]?.name||engine.out.qt)):'—'}
+Tokenizer vocab: ${engine&&engine.tok?engine.tok.tokens.length.toLocaleString():'—'}
+Dot-product scale: ${engine&&engine.attnScale?engine.attnScale:'—'}
+Llama-4 query scaling beta: ${engine&&engine.llama4Beta!=null?engine.llama4Beta:'—'}
+Reference health: ${MODEL_HEALTH.ready?'PASS':MODEL_HEALTH.stage}
+Quality mode: ${reasoningQualityNote()}
+System KV cached: ${engine&&engine.systemPrimedTokens?engine.systemPrimedTokens+' tokens':'No'}
+System KV prime time: ${engine&&engine.systemPrimeSeconds!=null?engine.systemPrimeSeconds.toFixed(2)+' s':'—'}
+Adaptive reasoning: ${reasoningPolicy()==='ultra'?'ULTRA ENABLED · 4/8/24/48':(reasoningPolicy()==='adaptive'?'v16 ENABLED · 8/16/32/64':'disabled')}
+RDNA subgroup matvec: ${engine&&engine.ops&&engine.ops.qgpu?(engine.ops.qgpu.useSubgroups?'VALIDATED + ACTIVE':(engine.ops.qgpu.subgroupFallbackReason||gpu.subgroupReason)):'—'}
+Adapter subgroup range: ${gpu.subgroupMinSize||0}-${gpu.subgroupMaxSize||0}
+Health certificate: ${engine&&engine.cachedHealth&&engine.cachedHealth()?'HIT · quick-certified startup':'MISS · full certification'}
+YaRN factor/original/log multiplier: ${engine&&engine.ropeCfg?(engine.ropeCfg.factor+' / '+engine.ropeCfg.orig+' / '+engine.ropeCfg.logMul):'—'}
+YaRN final attention factor: ${engine&&engine.ropeCfg?engine.ropeCfg.finalAttnFactor:'—'}
+GPU quant self-tests: ${engine&&engine.weightSelfTests?engine.weightSelfTests.map(x=>(x.qtype||'?')+': '+(x.ok?'PASS':'FAIL')+' rel '+(x.rel??0).toExponential(2)).join(' · '):'—'}
+Recent sampled tokens: ${engine&&engine.lastTokenTrace?engine.lastTokenTrace.map(x=>x.id+':'+JSON.stringify(x.token)).join(' '):'—'}
+Max compute workgroups/dimension: ${gpu.device?Number(gpu.device.limits.maxComputeWorkgroupsPerDimension).toLocaleString():'—'}
+Output projection rows: ${engine&&engine.out?Number(engine.out.dims[1]).toLocaleString():'—'}
+Output projection dispatch segments: ${engine&&engine.graph&&engine.graph.outOp?engine.graph.outOp.dispatches.length:'—'}
+Visible sampling transfer: ${visibleDecodingPolicy()==='quality'?(engine&&engine.vocabSize?fmtBytes(engine.vocabSize*4):'—'):(visibleDecodingPolicy()==='greedy'?'4 B/token':'Auto: 4 B casual/simple; full logits normal/complex')}
+Sampler chain: repeat → DRY → top-k → top-p → min-p → temperature
+Sampler defaults: k ${sampleSettings().topK} · p ${sampleSettings().topP} · min-p ${sampleSettings().minP} · temp ${sampleSettings().temp}
+Reasoning controls: ${reasoningQualityNote()}
+Persistent learned facts: ${NEXUS_MEMORY.data.facts.length}
+Persistent remembered turns: ${NEXUS_MEMORY.data.episodes.length}
+Memory storage: browser localStorage
+Turn learning: fact extraction + corrections + episodic memory
+Weight mutation: No (safe contextual learning)
+Shader diagnostics: labelled async pipelines + device-loss handling; popErrorScope disabled
+WGSL struct grammar: comma-separated members; C-style struct semicolons removed
+RoPE K input: FP32 projection
+Attention K/V cache: packed FP16 in u32 storage
+
+<b>Supported tensor codecs in direct GPU kernel</b>
+F32 · F16 · BF16 · Q4_0 · Q4_1 · Q5_0 · Q5_1 · Q8_0 · Q4_K · Q5_K · Q6_K`;
+};
+
+
+const _visualNewChatV2=newChat;
+newChat=function(){
+  NEXUS_ABORT=true;
+  if(!NEXUS_SKIP_NEWCHAT_RESET && engine&&typeof engine.resetSession==='function'){
+   engine.resetSession();
+   if(typeof engine.primeSystemSession==='function'){
+    engine.systemPrimePromise=engine.primeSystemSession()
+     .then(()=>setBadge(executionPlan.label+' ready · system KV cached',gpu.available))
+     .catch(e=>setBadge('System KV prime failed: '+e.message,false))
+   }
+  }
+  NEXUS_ABORT=false;
+  setSendMode(false);
+  _visualNewChatV2()
+};
+
+async function bootStable(){
+ loadStableSettings();bindStableSettings();
+ await initGPU();newChat();
+ try{await autoloadFoundryModel()}catch(e){addAssistant('Unable to auto-load the latest Foundry model: '+e.message,'Foundry project bridge');setBadge('Foundry model auto-load failed')}
+}
+bootStable();
+</script>
+</body>
+</html>
