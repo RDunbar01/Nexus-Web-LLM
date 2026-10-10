@@ -1,5 +1,29 @@
 # NEXUS Adaptive WebGPU
 
+## Created with AI-assisted coding
+
+**Developed by Rich Dunbar through hundreds of build–measure–learn iterations.**
+
+This was one of the first web-based inference engines I created using **AI-assisted coding**. I directed the project, made the design decisions and used AI to help implement, debug, review and refine the application.
+
+Development followed a repeated cycle: **build a capability, measure its behavior, learn from the results, and improve the next iteration**. Hundreds of revisions helped shape the engine and its browser-based workflow.
+
+The custom engine **does not require llama.cpp for local inference**. Its development formed a backbone for my web-based inference applications, bringing model execution into the browser through WebGPU.
+
+> [!IMPORTANT]
+> **Development of this standalone program has stopped.**
+> Work on the engine and application experience continues in **Nexus AI Studio**. This README preserves the scope and evidence for the legacy build; it does not imply that newer Studio features have been backported here.
+
+### Radeon hardware testing
+
+I bench-tested the application on my **AMD Radeon 7900**, observing GPU utilization and VRAM use to demonstrate inference without CPU model-compute offloading in the configurations I tested.
+
+This is my report of hands-on hardware testing. The automated evidence for the specific adaptive repair is documented separately below. No per-model hardware logs or numerical Radeon benchmark results accompany this README, so this statement does not qualify every listed profile or establish a throughput figure.
+
+“Without offloading” refers to model computation remaining on the GPU in those tests. The browser still uses CPU and system memory for application control, file handling and staging.
+
+---
+
 **Local GGUF inference in your browser, powered by a custom WebGPU engine.**
 
 NEXUS Adaptive WebGPU combines the NEXUS browser interface with the LittleBit packed-matrix and embedding kernels from the NEXUS v11 project. It reads GGUF metadata, validates model graphs, selects supported chat formats, estimates memory requirements, and performs execution checks before generation.
@@ -11,13 +35,16 @@ NEXUS Adaptive WebGPU combines the NEXUS browser interface with the LittleBit pa
 | Documentation date | 8 October 2026 |
 | Runtime | Browser-based WebGPU (no inference server required) |
 | Model input | Compatible local `.gguf` files (weights not included) |
-| Current status | **Experimental — architecture and quantization support is limited** |
+| Current status | **Legacy experimental build · Development stopped** |
+| Continuing development | **Nexus AI Studio** |
 
 > [!IMPORTANT]
 > **This is not a complete `llama.cpp` replacement.** The 100 searchable configuration profiles are presets, **not** 100 validated models. Model family, quantization support, successful loading, and language quality are separate questions. Unsupported configurations are rejected.
 
 ## Contents
 
+- [Created with AI-assisted coding](#created-with-ai-assisted-coding)
+- [Radeon hardware testing](#radeon-hardware-testing)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
@@ -48,7 +75,7 @@ NEXUS Adaptive WebGPU combines the NEXUS browser interface with the LittleBit pa
 - **Browser:** A browser exposing WebGPU with usable graphics acceleration. The build's recorded browser testing used Chromium with software graphics adapters.
 - **GPU memory:** Sufficient capacity for model weights, attention cache, and working buffers.
 
-**Not required for ordinary local inference:** PyTorch, a Python inference backend, an API key, or a model server.
+**Not required for ordinary local inference:** llama.cpp, PyTorch, a Python inference backend, an API key, or a model server.
 
 > [!WARNING]
 > This build does **not** provide a general CPU fallback or automatic CPU/GPU offloading when a transformer model exceeds GPU memory.
@@ -190,11 +217,13 @@ Normal file-picker inference works with local model files **without a remote inf
 
 ### Reporting an issue
 
+Active development of this standalone program has ended. Diagnostic records can still help document legacy behavior and inform continuing work in Nexus AI Studio; this is not a commitment to further repairs of this build.
+
 Use **Settings → Export diagnostics**. Include the exact **model filename**, **quantization**, **browser**, **GPU**, and **error message**. Review exported diagnostic JSON before publishing it, as it contains runtime/model details and measurements.
 
 ## Validation and test results
 
-The supplied build documentation records these checks:
+The developer-reported Radeon bench testing above and the saved automated checks below are separate evidence sources. The supplied documentation for the adaptive repair records these checks:
 
 - **11** JavaScript/parser/catalog/configuration tests.
 - SmolLM2 token-ID comparison with Hugging Face tokenizers on **seven cases**, including multilingual and whitespace-sensitive inputs.
@@ -216,7 +245,7 @@ Maximum reported **absolute logit error**:
 | LittleBit | `0.000000030` |
 
 > [!CAUTION]
-> Graphics testing for **this adaptive repair** used the **SwiftShader** and **llvmpipe** software adapters. **No Radeon throughput benchmark or broad real-model quality benchmark was performed in this repair.** Synthetic tensor calculations demonstrate implementation math; they are not trained language-model quality tests. The NHSC1 reader was retained but not independently revalidated end to end.
+> Graphics testing for **this adaptive repair** used the **SwiftShader** and **llvmpipe** software adapters. **The saved repair receipts do not include a Radeon throughput benchmark or broad real-model quality benchmark.** The developer reports separate Radeon bench testing above; its per-model measurements are not included in these receipts. Synthetic tensor calculations demonstrate implementation math; they are not trained language-model quality tests. The NHSC1 reader was retained but not independently revalidated end to end.
 
 ## Source and scope
 
@@ -226,4 +255,5 @@ The documented deliverable is **one self-contained HTML application**: `Nexus_We
 
 ---
 
-**NEXUS Emerging Technology · Experimental browser-native AI inference**
+**Rich Dunbar · NEXUS Emerging Technology**  
+**AI-assisted development · Build–measure–learn · Continued in Nexus AI Studio**
