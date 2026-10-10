@@ -1,4 +1,4 @@
-# NEXUS Adaptive WebGPU
+# NEXUS Web LLM
 
 ## Created with AI-assisted coding
 
